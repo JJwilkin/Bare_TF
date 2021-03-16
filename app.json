@@ -1,0 +1,12 @@
+{
+  "name": "test_bare",
+  "displayName": "test_bare",
+  "expo": {
+    "name": "test_bare",
+    "slug": "test_bare",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
