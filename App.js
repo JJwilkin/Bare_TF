@@ -3,7 +3,8 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { Camera } from 'expo-camera';
 import * as tf from '@tensorflow/tfjs';
 import {cameraWithTensors} from '@tensorflow/tfjs-react-native';
-import * as mobilenet from '@tensorflow-models/mobilenet';
+// import * as mobilenet from '@tensorflow-models/mobilenet';
+const mobilenet = require('@tensorflow-models/mobilenet');
 
 export default function App() {
   const [hasPermission, setHasPermission] = useState(null);
@@ -30,8 +31,10 @@ export default function App() {
         //we must always wait for the Tensorflow API to be ready before any TF operation...
         await tf.ready();
 
+        // const model = await mobilenet.load()
+        // console.log(model)
         //load the mobilenet model and save it in state
-        // setMobilenetModel(await loadMobileNetModel());
+        setMobilenetModel(await loadMobileNetModel());
 
         setFrameworkReady(true);
       })();
@@ -96,9 +99,9 @@ const handleCameraStream = (imageAsTensors) => {
       // if ( Platform.OS !== "ios" && Math.random()*50 % 50 == 1) run = false;
       // else if( Math.random()*7 % 7 == 0 ) { run = false; }
         const nextImageTensor = await imageAsTensors.next().value;
-        // await getPrediction(nextImageTensor);
+        await getPrediction(nextImageTensor);
         requestAnimationFrameId = requestAnimationFrame(loop);
-        console.log('hi')
+        // console.log('hi')
       }
       
     
