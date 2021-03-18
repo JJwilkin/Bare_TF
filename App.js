@@ -1,28 +1,88 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, Button } from 'react-native';
 import { Camera } from 'expo-camera';
 import * as tf from '@tensorflow/tfjs';
 import {cameraWithTensors} from '@tensorflow/tfjs-react-native';
-// import * as mobilenet from '@tensorflow-models/mobilenet';
-const mobilenet = require('@tensorflow-models/mobilenet');
+import * as mobilenet from '@tensorflow-models/mobilenet';
+import * as knnClassifier from '@tensorflow-models/knn-classifier';
+import { makeObservable, observable, action, computed } from "mobx"
+const customModel = require('./model_3.json');
+import TextDisplay from './TextDisplay';
+// const Tensorset = require('tensorset');
+
+class WordPrediction {
+  word = ""
+  showPrediction = false
+  constructor() {
+      makeObservable(this, {
+          word: observable,
+          toggle: action,
+          getWord: computed,
+          getShowPrediction: computed,
+          prediction: action,
+          showPrediction:observable,
+
+      })
+  }
+  get getWord () {
+    // console.log(this.word)
+    return this.word
+  }
+  
+  get getShowPrediction () {
+    return this.showPrediction;
+  }
+
+  toggle(word) {
+      this.word = word
+      // console.log(word)
+  }
+
+  prediction(val) {
+    this.showPrediction = val;
+  }
+}
 
 export default function App() {
+  const store = new WordPrediction();
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const TensorCamera = cameraWithTensors(Camera);
   //Tensorflow and Permissions
   const [mobilenetModel, setMobilenetModel] = useState(null);
+  const [classifier, setClassifier] = useState();
   const [frameworkReady, setFrameworkReady] = useState(false);
   const [predictionFound, setPredictionFound] = useState(false);
 
   const textureDims = Platform.OS === "ios"? { width: 1080, height: 1920 } : { width: 1600, height: 1200 };
   const tensorDims = { width: 152, height: 200 }; 
 
+  async function load(classifier) {
+      //can be change to other source
+   
+    // console.log(customModel)
+    let tensorObj = parse(customModel);
+    //covert back to tensor
+    // Object.keys(tensorObj).forEach((key) => {
+    //   tensorObj[key] = tf.tensor(tensorObj[key], [tensorObj[key].length / 1000, 1000])
+    // })
+    await classifier.setClassifierDataset(tensorObj);
+  }
+
+  function parse (rawData) {
+    let data = JSON.parse(rawData);
+    const dataset = {};
+    for (const example of data) {
+        dataset[example.label] = tf.tensor(example.values, example.shape);
+    }
+    return dataset;
+}
+
   let requestAnimationFrameId = 0;
   useEffect(() => {
     if(!frameworkReady) {
       (async () => {
-
+        
         //check permissions
         const { status } = await Camera.requestPermissionsAsync();
         console.log(`permissions status: ${status}`);
@@ -35,7 +95,16 @@ export default function App() {
         // console.log(model)
         //load the mobilenet model and save it in state
         setMobilenetModel(await loadMobileNetModel());
-
+        let classifier = knnClassifier.create();
+        await load(classifier);
+        // let existingJson = await (await fetch('./model.json')).json()
+        // if (existingJson) {
+        //   let dataset = await Tensorset.parse(existingJson);
+        //   classifier.setClassifierDataset(dataset);
+        //   let classes = Object.keys(classifier.getClassExampleCount());
+        //   console.log(classes);
+        // }
+        setClassifier(classifier);
         setFrameworkReady(true);
       })();
     }
@@ -71,26 +140,33 @@ export default function App() {
   }
 
   const getPrediction = async (tensor) => {
-    if (!tensor && tensor != null && !store.getShowPrediction) return;
-   
+    // console.log(store.getShowPrediction);
+    if ((!store.getShowPrediction) || (!tensor && tensor != null) ) return;
+
+    // setTimeout(()=>{store.prediction(false)},500);
+    const activation = mobilenetModel.infer(tensor, 'conv_preds');
+          // Get the most likely class and confidence from the classifier module.
+      const result = await classifier.predictClass(activation);
+      const prediction = `${result.label} ${result.confidences[result.label]}`
+      store.toggle(prediction);
     //topk set to 1
-    const prediction = await mobilenetModel.classify(tensor, 1);
-    console.log(`prediction: ${JSON.stringify(prediction)}`);
+    // const prediction = await mobilenetModel.classify(tensor, 1);
+    // console.log(`prediction: ${JSON.stringify(prediction)}`);
 
-    if(!prediction || prediction.length === 0) { return; }
+    // if(!prediction || prediction.length === 0) { return; }
     
-    //only attempt translation when confidence is higher than 20%
-    if(prediction[0].probability > 0.4) {
+    // //only attempt translation when confidence is higher than 20%
+    // if(prediction[0].probability > 0.4) {
 
-      //stop looping!
-      // cancelAnimationFrame(requestAnimationFrameId);
-      // setPredictionFound(true);
-      // setWord(prediction[0].className);
-      // store.toggle(prediction[0].className);
-      // console.log(store.word)
-      //get translation!
-      // await getTranslation(prediction[0].className);
-    }
+    //   //stop looping!
+    //   // cancelAnimationFrame(requestAnimationFrameId);
+    //   // setPredictionFound(true);
+    //   // setWord(prediction[0].className);
+    //   // store.toggle(prediction[0].className);
+    //   // console.log(store.word)
+    //   //get translation!
+    //   // await getTranslation(prediction[0].className);
+    // }
   }
 
 const handleCameraStream = (imageAsTensors) => {
@@ -116,27 +192,40 @@ const handleCameraStream = (imageAsTensors) => {
   }
   return (
     <View style={styles.container}>
-      { frameworkReady ? renderCameraView() : <Text styles={styles.title}>Loading</Text> }
+      {/* <View style={styles.header}>
+        <Text style={styles.title}>
+          {word}
+        </Text>
+      </View> */}
+      <TextDisplay store={store} styles={styles}/>
+      <View style={styles.body}>
+        { frameworkReady ? renderCameraView() : <Text styles={styles.title}>Loading</Text> }
+      </View>  
     </View>
+    
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: 'flex-start',
+    paddingTop: 30,
+    backgroundColor: '#E8E8E8',
   },
-  camera: {
-     width: 700/2,
-    height: 800/2,
-    zIndex: 1,
-    borderWidth: 0,
-    borderRadius: 0,
+  header: {
+    backgroundColor: '#41005d'
   },
-  buttonContainer: {
-    flex: 1,
-    backgroundColor: 'transparent',
-    flexDirection: 'row',
-    margin: 20,
+  title: {
+    margin: 10,
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#ffffff'
+  },
+  body: {
+    padding: 5,
+    paddingTop: 25
   },
   cameraView: {
     display: 'flex',
@@ -148,20 +237,45 @@ const styles = StyleSheet.create({
     height: '100%',
     paddingTop: 10
   },
-  button: {
-    flex: 0.1,
-    alignSelf: 'flex-end',
-    alignItems: 'center',
+  camera : {
+    width: 700/2,
+    height: 800/2,
+    zIndex: 1,
+    borderWidth: 0,
+    borderRadius: 0,
   },
-  text: {
-    fontSize: 18,
-    color: 'white',
+  translationView: {
+    marginTop: 30, 
+    padding: 20,
+    borderColor: '#cccccc',
+    borderWidth: 1,
+    borderStyle: 'solid',
+    backgroundColor: '#ffffff',
+    marginHorizontal: 20,
+    height: 500
   },
-  title: {
-    margin: 10,
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    color: '#ffffff'
+  translationTextField: {
+    fontSize:60
+  },
+  wordTextField: {
+    textAlign:'right', 
+    fontSize:20, 
+    marginBottom: 50
+  },
+  legendTextField: {
+    fontStyle: 'italic',
+    color: '#888888'
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: 'purple',
+    borderStyle: 'solid',
+    borderRadius: 8,
+    color: 'black',
+    paddingRight: 30,
+    backgroundColor: '#ffffff'
   },
 });

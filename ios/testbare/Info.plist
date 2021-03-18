@@ -61,5 +61,7 @@
 	<string>Need to listen styll</string>
 	<key>LSApplicationCategoryType</key>
 	<string></string>
+	<key>NSMotionUsageDescription</key>
+	<string>need to know when ur styll, styll</string>
 </dict>
 </plist>
