@@ -1,4 +1,4 @@
-package com.testbare;
+package com.chowtime;
 
 import android.os.Bundle;
 
