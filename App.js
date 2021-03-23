@@ -7,9 +7,6 @@ import * as mobilenet from '@tensorflow-models/mobilenet';
 import * as knnClassifier from '@tensorflow-models/knn-classifier';
 import { makeObservable, observable, action, computed } from "mobx"
 import TextDisplay from './TextDisplay';
-import { RNCamera } from 'react-native-camera';
-import ExampleCamera from './ExampleCamera';
-
 const customModel = require('./model_3.json');
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -74,41 +71,41 @@ export default function App() {
 }
 
   let requestAnimationFrameId = 0;
-  // useEffect(() => {
-  //   if(!frameworkReady) {
-  //     (async () => {
+  useEffect(() => {
+    if(!frameworkReady) {
+      (async () => {
         
-  //       //check permissions
-  //       const { status } = await Camera.requestPermissionsAsync();
-  //       console.log(`permissions status: ${status}`);
-  //       setHasPermission(status === 'granted');
+        //check permissions
+        const { status } = await Camera.requestPermissionsAsync();
+        console.log(`permissions status: ${status}`);
+        setHasPermission(status === 'granted');
 
-  //       //we must always wait for the Tensorflow API to be ready before any TF operation...
-  //       await tf.ready();
+        //we must always wait for the Tensorflow API to be ready before any TF operation...
+        await tf.ready();
 
-  //       //load the mobilenet model and save it in state
-  //       setMobilenetModel(await loadMobileNetModel());
-  //       let classifier = knnClassifier.create();
-  //       await load(classifier);
-  //       // let existingJson = await (await fetch('./model.json')).json()
-  //       // if (existingJson) {
-  //       //   let dataset = await Tensorset.parse(existingJson);
-  //       //   classifier.setClassifierDataset(dataset);
-  //       //   let classes = Object.keys(classifier.getClassExampleCount());
-  //       //   console.log(classes);
-  //       // }
-  //       setClassifier(classifier);
-  //       setFrameworkReady(true);
+        //load the mobilenet model and save it in state
+        setMobilenetModel(await loadMobileNetModel());
+        let classifier = knnClassifier.create();
+        await load(classifier);
+        // let existingJson = await (await fetch('./model.json')).json()
+        // if (existingJson) {
+        //   let dataset = await Tensorset.parse(existingJson);
+        //   classifier.setClassifierDataset(dataset);
+        //   let classes = Object.keys(classifier.getClassExampleCount());
+        //   console.log(classes);
+        // }
+        setClassifier(classifier);
+        setFrameworkReady(true);
 
-  //     })();
-  //   }
-  // }, []);
+      })();
+    }
+  }, []);
 
-  // useEffect(() => {
-  //   return () => {
-  //     cancelAnimationFrame(requestAnimationFrameId);
-  //   };
-  // }, [requestAnimationFrameId]);
+  useEffect(() => {
+    return () => {
+      cancelAnimationFrame(requestAnimationFrameId);
+    };
+  }, [requestAnimationFrameId]);
 
   const loadMobileNetModel = async () => {
     const model = await mobilenet.load();
@@ -139,7 +136,7 @@ export default function App() {
     const activation = mobilenetModel.infer(tensor, 'conv_preds');
     // Get the most likely class and confidence from the classifier module.
       const result = await classifier.predictClass(activation);
-      const prediction = `${result.label} ${result.confidences[result.label]}`
+      const prediction = `${result.label}`
       store.toggle(prediction);
     
   }
@@ -160,13 +157,14 @@ const handleCameraStream = (imageAsTensors) => {
     return <Text>No access to camera</Text>;
   }
   return (
-    // <View style={styles.container}>
-    //   <TextDisplay store={store} styles={styles} frameworkReady={frameworkReady}/>
-    //   <View style={styles.body}>
-    //     { frameworkReady ? renderCameraView() : <Text styles={styles.title}>Loading</Text> }
-    //   </View>  
-    // </View>
-    <ExampleCamera/>
+    <View style={styles.container}>
+      
+      <View style={styles.body}>
+        { frameworkReady ? renderCameraView() : <Text styles={styles.title}>Loading</Text> }
+        
+      </View>  
+      <TextDisplay store={store} styles={styles} frameworkReady={frameworkReady}/>
+    </View>
   );
 }
 
@@ -174,10 +172,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'flex-start',
-    paddingTop: 30,
+    // paddingTop: 30,
     backgroundColor: '#E8E8E8',
   },
   header: {
+    zIndex:10,
+    flex:1,
+    padding:25,
+    paddingTop:45,
+    display:'flex',
+    flexDirection:'column',
+    justifyContent:'space-between'
     
   },
   title: {
@@ -190,6 +195,7 @@ const styles = StyleSheet.create({
   },
   body: {
     padding: 0,
+    zIndex:1
   },
   cameraView: {
     display: 'flex',
@@ -199,7 +205,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     width: '100%',
     height: '100%',
-    paddingTop: 10
+    // paddingTop: 10
   },
   camera : {
     width: windowWidth,

@@ -11,6 +11,7 @@ import {
   Platform,
 } from "react-native";
 import { DeviceMotion } from 'expo-sensors';
+import { AntDesign, Ionicons } from '@expo/vector-icons'; 
 
 export default function TextDisplay(props) {
   const { store, styles, frameworkReady } = props;
@@ -54,7 +55,11 @@ export default function TextDisplay(props) {
 
   return (
     <View style={styles.header}>
-      {/* <Text style={styles.title}>{word}</Text> */}
+      
+      <Ionicons name="arrow-back-circle" size={40} color="white" />
+      <Text style={styles.title}>{word}</Text>
+      {/* <AntDesign name="plussquareo" size={70} color="white" /> */}
+      <Button title="Ingredients" />
     </View>
   );
 }
