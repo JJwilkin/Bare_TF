@@ -25,4 +25,6 @@ target 'chowtime' do
   pod 'RNFS', :path => '../node_modules/react-native-fs'
 
 
+  pod 'react-native-safe-area-context', :path => '../node_modules/react-native-safe-area-context'
+
 end

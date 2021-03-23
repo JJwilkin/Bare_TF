@@ -31,14 +31,12 @@ allprojects {
             url("$rootDir/../node_modules/jsc-android/dist")
         }
         maven {
-            url("$rootDir/../node_modules/expo-camera/android/maven")
+            url "$rootDir/../node_modules/expo-camera/android/maven"
         }
         maven {
             url 'https://www.jitpack.io'
         }
-
-
-
+        
         google()
         jcenter()
     }
