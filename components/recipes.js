@@ -125,18 +125,10 @@ function Recipes({ route, navigation }) {
   } else {
     if (isLoading) {
       return (
-        <View style={styles.viewCenter}>
-          <LottieView
-            style={{ width: windowWidth * 0.75, height: windowWidth * 0.75 }}
-            resizeMode="cover"
-            source={require("./loading2.json")}
-            autoPlay
-            loop
-          />
-          <Text style={[styles.subtitle, { marginVertical: 40 }]}>
-            Loading Recipes
-          </Text>
+        <View>
+        
         </View>
+        //TO DO: ADD LOADING VIEW
       );
     } else if (isError) {
       return (
