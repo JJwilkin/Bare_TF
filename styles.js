@@ -73,7 +73,7 @@ export const global = {
 // } else {
 export const title = { 
   color: black,
-  paddingTop: 75,
+  paddingTop: 60,
   fontFamily: "SF-Bold",
   fontSize: 35,
   justifyContent: "flex-start",
