@@ -74,6 +74,6 @@ const styles = StyleSheet.create({
   indicator: {
     backgroundColor:'black',
     width: '18%',
-    height: 4
+    height: 3
   }
 });
