@@ -207,12 +207,10 @@ const handleCameraStream = (imageAsTensors) => {
   }
   return (
     <View style={styles.container}>
-      
       <View style={styles.body}>
         { frameworkReady ? renderCameraView() : <Text styles={styles.title}>Loading</Text> }
-        
       </View>  
-      <CameraOverlay store={store} styles={styles} frameworkReady={frameworkReady}/>
+      <CameraOverlay store={store} styleSheet={styles} frameworkReady={frameworkReady}/>
     </View>
   );
 }

@@ -17,7 +17,7 @@ const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 export default function CameraOverlay(props) {
-  const { store, styles, frameworkReady } = props;
+  const { store, styleSheet, frameworkReady } = props;
   const [word, setWord] = useState("");
   const [showIngredients, setShowIngredients] = useState(false);
   
@@ -61,11 +61,8 @@ export default function CameraOverlay(props) {
       
       if (Math.abs(x)< 0.08 && Math.abs(y) < 0.08 && Math.abs(z) < 0.08){
         store.prediction(true)
-    
-      }
-      else {
+      } else {
         store.prediction(false);
-
       }
     })
   }
@@ -82,14 +79,14 @@ export default function CameraOverlay(props) {
   },1000)
 
   return (
-    <View style={[styles.header]}>
-      <View style={{justifyContent:'space-between', alignItems:'center', flexDirection:'row', width:windowWidth, paddingHorizontal:15}}>
+    <View style={[styleSheet.header]}>
+      <View style={styles.topBarContainer}>
         <TouchableOpacity onPress={() => console.log(getData("ingredientList"))}>
           <Ionicons name="arrow-back-circle" size={40} color="white"/>
         </TouchableOpacity>
       </View>
-      <View style={{display:'flex',flex:1, justifyContent:'center', alignItems:'center', }}>
-        <ImageBackground source={targetAreaPng} style={styleSheet.image}>
+      <View style={styles.centerAll}>
+        <ImageBackground source={targetAreaPng} style={styles.image}>
            <SolidButton
             color={lightOverlay}
             style={{width:'100%'}}
@@ -98,7 +95,7 @@ export default function CameraOverlay(props) {
           />
         </ImageBackground>
       </View>
-      <View style={{alignItems:'center', display:'flex'}}>
+      <View style={styles.centerAlign}>
         <SolidButton
           color={white}
           style={{width:'100%'}}
@@ -108,19 +105,19 @@ export default function CameraOverlay(props) {
         /> 
       </View>
       {showIngredients ? 
-        <View style={{position:'absolute', top:windowHeight*0.3, padding:30, paddingBottom:10, borderRadius:30, backgroundColor:"white", width: windowWidth*0.85, height:windowHeight*0.65,}}>
+        <View style={styles.modal}>
           <View style={{flex:1}}>
-            <View style={{justifyContent:'space-between', flexDirection:'row', alignItems:'center', marginBottom:20}}>
-              <Text style={[title, {paddingTop:0, marginBottom:0}]}>Ingredients</Text>
+            <View style={styles.modalHeader}>
+              <Text style={[title, styles.modalTitle]}>Ingredients</Text>
               <TouchableOpacity onPress={() => setShowIngredients(false)}>
                 <AntDesign name="arrowdown" size={30} color="black" />
               </TouchableOpacity>
             </View>
           {store.getIngredients().map((ingredient)=> (
-            <Text style={styleSheet.text}>{ingredient}</Text>
+            <Text style={styles.text}>{ingredient}</Text>
           ))}
           </View>
-          <View style={{flex:1, flexDirection:'column', justifyContent:'flex-end'}}>
+          <View style={styles.buttonContainer}>
             <SolidButton
               color={green}
               style={{width:'100%'}}
@@ -136,23 +133,64 @@ export default function CameraOverlay(props) {
 }
 
 
-const styleSheet = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: "column"
+    flexDirection: "column",
+  },
+  centerAll: {
+    display: "flex",
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  centerAlign: {
+    alignItems:'center', 
+    display:'flex'
   },
   image: {
     height: windowWidth * 0.4,
     width: windowWidth * 0.4,
     resizeMode: "cover",
     justifyContent: "center",
-    alignItems:'center'
+    alignItems: "center",
   },
   text: {
     color: darkGrey,
     fontSize: 22,
     fontWeight: "bold",
     textAlign: "left",
-    
-  }
+  },
+  topBarContainer: {
+    justifyContent: "space-between",
+    alignItems: "center",
+    flexDirection: "row",
+    width: windowWidth,
+    paddingHorizontal: 15,
+  },
+  buttonContainer: {
+    flex: 1,
+    flexDirection: "column",
+    justifyContent: "flex-end",
+  },
+  modal: {
+    position: "absolute",
+    top: windowHeight * 0.3,
+    padding: 30,
+    paddingBottom: 10,
+    borderRadius: 30,
+    backgroundColor: "white",
+    width: windowWidth * 0.85,
+    height: windowHeight * 0.65,
+  },
+  modalHeader: {
+    justifyContent: "space-between",
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  modalTitle: {
+    paddingTop: 0,
+    marginBottom: 0,
+  },
 });
