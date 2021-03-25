@@ -11,6 +11,7 @@ import { DeviceMotion } from 'expo-sensors';
 import { AntDesign, Ionicons } from '@expo/vector-icons';
 import SolidButton from './components/buttons/solidButton'
 import {title, darkGrey, white, lightOverlay, green, lightGrey } from "./styles";
+import AsyncStorage from '@react-native-community/async-storage';
 const targetAreaPng = require("./assets/targetArea.png");
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -18,7 +19,6 @@ const windowHeight = Dimensions.get('window').height;
 export default function CameraOverlay(props) {
   const { store, styles, frameworkReady } = props;
   const [word, setWord] = useState("");
-  const [ingredientList, setIngredientList] = useState([]);
   const [showIngredients, setShowIngredients] = useState(false);
   
   useEffect(()=>{
@@ -38,9 +38,19 @@ export default function CameraOverlay(props) {
       const jsonValue = JSON.stringify(value)
       await AsyncStorage.setItem(key, jsonValue)
     } catch (e) {
-      // saving error
+      console.log(e)
     }
   };
+
+  const getData = async (key) => {
+    try {
+      const jsonValue = await AsyncStorage.getItem(key)
+      console.log(JSON.parse(jsonValue))
+      return JSON.parse(jsonValue);
+    } catch(e) {
+      console.log(e)
+    }
+  }
 
   const subscribe = () => {
     console.log("Subscribing")
@@ -68,18 +78,15 @@ export default function CameraOverlay(props) {
     if (store.word !== word){
       setWord(store.word);
     }
-    let arrayEqual = JSON.stringify(store.getIngredients().sort()) === JSON.stringify(ingredientList.sort())
-    if (arrayEqual) {
-      setIngredientList(store.getIngredients());
-    }
+    store.getIngredients();
   },1000)
 
   return (
     <View style={[styles.header]}>
       <View style={{justifyContent:'space-between', alignItems:'center', flexDirection:'row', width:windowWidth, paddingHorizontal:15}}>
-        <Ionicons name="arrow-back-circle" size={40} color="white"/>
-        {/* <Text style={subtitle}>Added Tangerines</Text>
-        <Ionicons name="arrow-back-circle" size={40} color="white" /> */}
+        <TouchableOpacity onPress={() => console.log(getData("ingredientList"))}>
+          <Ionicons name="arrow-back-circle" size={40} color="white"/>
+        </TouchableOpacity>
       </View>
       <View style={{display:'flex',flex:1, justifyContent:'center', alignItems:'center', }}>
         <ImageBackground source={targetAreaPng} style={styleSheet.image}>
@@ -97,7 +104,7 @@ export default function CameraOverlay(props) {
           style={{width:'100%'}}
           onPress={()=>{setShowIngredients(true)}}
           labelStyle={{color:'grey', fontSize:16}}
-          text={`^ Ingredients ${ingredientList.length}`}
+          text={`^ Ingredients ${store.getIngredients().length}`}
         /> 
       </View>
       {showIngredients ? 
@@ -109,7 +116,7 @@ export default function CameraOverlay(props) {
                 <AntDesign name="arrowdown" size={30} color="black" />
               </TouchableOpacity>
             </View>
-          {ingredientList.map((ingredient)=> (
+          {store.getIngredients().map((ingredient)=> (
             <Text style={styleSheet.text}>{ingredient}</Text>
           ))}
           </View>

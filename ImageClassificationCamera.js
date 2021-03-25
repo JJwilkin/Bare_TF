@@ -8,7 +8,6 @@ import * as knnClassifier from '@tensorflow-models/knn-classifier';
 import { makeObservable, observable, action, computed } from "mobx"
 import CameraOverlay from './CameraOverlay';
 import * as Font from 'expo-font';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 //Components
 import * as SplashScreen from 'expo-splash-screen';
