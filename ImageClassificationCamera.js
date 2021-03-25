@@ -1,27 +1,114 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Dimensions} from 'react-native';
 import { Camera } from 'expo-camera';
 import * as tf from '@tensorflow/tfjs';
 import {cameraWithTensors} from '@tensorflow/tfjs-react-native';
 import * as mobilenet from '@tensorflow-models/mobilenet';
+import * as knnClassifier from '@tensorflow-models/knn-classifier';
+import { makeObservable, observable, action, computed } from "mobx"
+import CameraOverlay from './CameraOverlay';
+import * as Font from 'expo-font';
+
+//Components
+import * as SplashScreen from 'expo-splash-screen';
+
+const loadFonts = () => Font.loadAsync({
+  'SF-Heavy': require('./assets/fonts/SF-Heavy.otf'),
+  'SF-Bold': require('./assets/fonts/SF-Bold.otf'),
+  'SF-Semibold': require('./assets/fonts/SF-Semibold.otf'),
+  'SF-Regular': require('./assets/fonts/SF-Regular.otf'),
+  'SF-Medium': require('./assets/fonts/SF-Medium.otf'),
+  'SF-Light': require('./assets/fonts/SF-Light.otf'),
+  'SF-Thin': require('./assets/fonts/SF-Thin.otf')
+})
+const customModel = require('./model_3.json');
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
+
+class WordPrediction {
+  word = ""
+  showPrediction = false
+  ingredientList = []
+  constructor() {
+      makeObservable(this, {
+          word: observable,
+          toggle: action,
+          getWord: computed,
+          getShowPrediction: computed,
+          prediction: action,
+          showPrediction:observable,
+
+      })
+  }
+  get getWord () {
+    return this.word
+  }
+  
+  get getShowPrediction () {
+    return this.showPrediction;
+  }
+
+  toggle(word) {
+      this.word = word;
+  }
+
+  prediction(val) {
+    this.showPrediction = val;
+  }
+
+  getIngredients() {
+    return this.ingredientList;
+  }
+
+  addIngredient(val) {
+    if (!this.ingredientList.includes(val)){
+      this.ingredientList.push(val);
+    }
+  }
+
+  removeIngredient(val) {
+    this.ingredientList.remove(val);
+  }
+}
 
 export default function ImageClassificationCamera() {
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+  const store = new WordPrediction();
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const TensorCamera = cameraWithTensors(Camera);
   //Tensorflow and Permissions
   const [mobilenetModel, setMobilenetModel] = useState(null);
+  const [classifier, setClassifier] = useState();
   const [frameworkReady, setFrameworkReady] = useState(false);
   const [predictionFound, setPredictionFound] = useState(false);
 
   const textureDims = Platform.OS === "ios"? { width: 1080, height: 1920 } : { width: 1600, height: 1200 };
   const tensorDims = { width: 152, height: 200 }; 
 
+  SplashScreen.preventAutoHideAsync() // TO DO: HANDLE THEN AND CATCH
+  .then(result => console.log(`SplashScreen.preventAutoHideAsync() succeeded: ${result}`))
+  .catch(console.warn);
+
+  async function load(classifier) {
+    let tensorObj = parse(customModel);
+    await classifier.setClassifierDataset(tensorObj);
+  }
+
+  function parse (rawData) {
+    let data = JSON.parse(rawData);
+    const dataset = {};
+    for (const example of data) {
+        dataset[example.label] = tf.tensor(example.values, example.shape);
+    }
+    return dataset;
+}
+
   let requestAnimationFrameId = 0;
   useEffect(() => {
     if(!frameworkReady) {
       (async () => {
-
+        
         //check permissions
         const { status } = await Camera.requestPermissionsAsync();
         console.log(`permissions status: ${status}`);
@@ -31,12 +118,31 @@ export default function ImageClassificationCamera() {
         await tf.ready();
 
         //load the mobilenet model and save it in state
-        // setMobilenetModel(await loadMobileNetModel());
-
+        setMobilenetModel(await loadMobileNetModel());
+        let classifier = knnClassifier.create();
+        await load(classifier);
+        // let existingJson = await (await fetch('./model.json')).json()
+        // if (existingJson) {
+        //   let dataset = await Tensorset.parse(existingJson);
+        //   classifier.setClassifierDataset(dataset);
+        //   let classes = Object.keys(classifier.getClassExampleCount());
+        //   console.log(classes);
+        // }
+        setClassifier(classifier);
         setFrameworkReady(true);
+
       })();
     }
-  }, [frameworkReady]);
+  }, []);
+
+  useEffect(async() => {
+    await loadFonts();
+    setFontsLoaded(true);
+  }, [])
+
+  useEffect(() => {
+    SplashScreen.hideAsync();
+  }, [fontsLoaded])
 
   useEffect(() => {
     return () => {
@@ -63,44 +169,33 @@ export default function ImageClassificationCamera() {
                   onReady={handleCameraStream}
                   autorender={true}
                 />
+                
             </View>;
   }
 
   const getPrediction = async (tensor) => {
-    if (!tensor && tensor != null && !store.getShowPrediction) return;
-   
-    //topk set to 1
-    const prediction = await mobilenetModel.classify(tensor, 1);
-    console.log(`prediction: ${JSON.stringify(prediction)}`);
+    if ((!store.getShowPrediction) || (!tensor && tensor != null) ) return;
 
-    if(!prediction || prediction.length === 0) { return; }
-    
-    //only attempt translation when confidence is higher than 20%
-    if(prediction[0].probability > 0.4) {
-
-      //stop looping!
-      cancelAnimationFrame(requestAnimationFrameId);
-      setPredictionFound(true);
-      setWord(prediction[0].className);
-      store.toggle(prediction[0].className);
-      console.log(store.word)
-      //get translation!
-      // await getTranslation(prediction[0].className);
-    }
+    const activation = mobilenetModel.infer(tensor, 'conv_preds');
+    // Get the most likely class and confidence from the classifier module.
+      const result = await classifier.predictClass(activation);
+      const prediction = `${result.label} ${result.confidences[result.label]}`
+      if (result.confidences[result.label] > 0.8) {
+        store.toggle(prediction);
+        store.addIngredient(result.label);
+      }
+      else {
+        store.toggle("Scanning...")
+      }
   }
 
 const handleCameraStream = (imageAsTensors) => {
     const loop = async () => {
-      
-      // if ( Platform.OS !== "ios" && Math.random()*50 % 50 == 1) run = false;
-      // else if( Math.random()*7 % 7 == 0 ) { run = false; }
         const nextImageTensor = await imageAsTensors.next().value;
-        // await getPrediction(nextImageTensor);
+        await getPrediction(nextImageTensor);
         requestAnimationFrameId = requestAnimationFrame(loop);
-        console.log('hi')
+        nextImageTensor.dispose();
       }
-      
-    
     if(!predictionFound) loop();
   }
 
@@ -112,7 +207,12 @@ const handleCameraStream = (imageAsTensors) => {
   }
   return (
     <View style={styles.container}>
-      { frameworkReady ? renderCameraView() : <Text styles={styles.title}>Loading</Text> }
+      
+      <View style={styles.body}>
+        { frameworkReady ? renderCameraView() : <Text styles={styles.title}>Loading</Text> }
+        
+      </View>  
+      <CameraOverlay store={store} styles={styles} frameworkReady={frameworkReady}/>
     </View>
   );
 }
@@ -120,19 +220,32 @@ const handleCameraStream = (imageAsTensors) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: 'flex-start',
+    // paddingTop: 30,
+    backgroundColor: '#E8E8E8',
   },
-  camera: {
-     width: 700/2,
-    height: 800/2,
-    zIndex: 1,
-    borderWidth: 0,
-    borderRadius: 0,
+  header: {
+    zIndex:10,
+    flex:1,
+    padding:25,
+    paddingTop:45,
+    display:'flex',
+    flexDirection:'column',
+    alignItems:'center',
+    justifyContent:'space-between'
+    
   },
-  buttonContainer: {
-    flex: 1,
-    backgroundColor: 'transparent',
-    flexDirection: 'row',
-    margin: 20,
+  title: {
+    // margin: 10,
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#ffffff',
+    zIndex:2
+  },
+  body: {
+    padding: 0,
+    zIndex:1
   },
   cameraView: {
     display: 'flex',
@@ -142,22 +255,47 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     width: '100%',
     height: '100%',
-    paddingTop: 10
+    // paddingTop: 10
   },
-  button: {
-    flex: 0.1,
-    alignSelf: 'flex-end',
-    alignItems: 'center',
+  camera : {
+    width: windowWidth,
+    height: windowHeight,
+    zIndex: 1,
+    borderWidth: 0,
+    borderRadius: 0,
   },
-  text: {
-    fontSize: 18,
-    color: 'white',
+  translationView: {
+    marginTop: 30, 
+    padding: 20,
+    borderColor: '#cccccc',
+    borderWidth: 1,
+    borderStyle: 'solid',
+    backgroundColor: '#ffffff',
+    marginHorizontal: 20,
+    height: 500
   },
-  title: {
-    margin: 10,
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    color: '#ffffff'
+  translationTextField: {
+    fontSize:60
+  },
+  wordTextField: {
+    textAlign:'right', 
+    fontSize:20, 
+    marginBottom: 50
+  },
+  legendTextField: {
+    fontStyle: 'italic',
+    color: '#888888'
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: 'purple',
+    borderStyle: 'solid',
+    borderRadius: 8,
+    color: 'black',
+    paddingRight: 30,
+    backgroundColor: '#ffffff'
   },
 });

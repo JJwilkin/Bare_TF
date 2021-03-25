@@ -9,8 +9,8 @@ export default function SolidButton(props) {
       color={props.color}  
       onPress={props.onPress}
       uppercase={false}
-      labelStyle={styles.label}
-      style={styles.button}
+      labelStyle={[styles.label, props.labelStyle]}
+      style={[styles.button, props.styles]}
     >
       {props.text}
     </Button>
