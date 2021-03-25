@@ -6,9 +6,9 @@ import {cameraWithTensors} from '@tensorflow/tfjs-react-native';
 import * as mobilenet from '@tensorflow-models/mobilenet';
 import * as knnClassifier from '@tensorflow-models/knn-classifier';
 import { makeObservable, observable, action, computed } from "mobx"
-import TextDisplay from './TextDisplay';
+import CameraOverlay from './CameraOverlay';
 import * as Font from 'expo-font';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 //Components
 import * as SplashScreen from 'expo-splash-screen';
@@ -72,7 +72,7 @@ class WordPrediction {
   }
 }
 
-export default function App() {
+export default function ImageClassificationCamera() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const store = new WordPrediction();
   const [hasPermission, setHasPermission] = useState(null);
@@ -213,7 +213,7 @@ const handleCameraStream = (imageAsTensors) => {
         { frameworkReady ? renderCameraView() : <Text styles={styles.title}>Loading</Text> }
         
       </View>  
-      <TextDisplay store={store} styles={styles} frameworkReady={frameworkReady}/>
+      <CameraOverlay store={store} styles={styles} frameworkReady={frameworkReady}/>
     </View>
   );
 }

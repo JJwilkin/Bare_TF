@@ -15,7 +15,7 @@ const targetAreaPng = require("./assets/targetArea.png");
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-export default function TextDisplay(props) {
+export default function CameraOverlay(props) {
   const { store, styles, frameworkReady } = props;
   const [word, setWord] = useState("");
   const [ingredientList, setIngredientList] = useState([]);
@@ -31,7 +31,16 @@ export default function TextDisplay(props) {
 
   useEffect(()=>{
     return () => unsubscribe();
-  },[])
+  },[]);
+
+  const storeData = async (key, value) => {
+    try {
+      const jsonValue = JSON.stringify(value)
+      await AsyncStorage.setItem(key, jsonValue)
+    } catch (e) {
+      // saving error
+    }
+  };
 
   const subscribe = () => {
     console.log("Subscribing")
@@ -96,7 +105,7 @@ export default function TextDisplay(props) {
           <View style={{flex:1}}>
             <View style={{justifyContent:'space-between', flexDirection:'row', alignItems:'center', marginBottom:20}}>
               <Text style={[title, {paddingTop:0, marginBottom:0}]}>Ingredients</Text>
-              <TouchableOpacity onPress={() =>setShowIngredients(false)}>
+              <TouchableOpacity onPress={() => setShowIngredients(false)}>
                 <AntDesign name="arrowdown" size={30} color="black" />
               </TouchableOpacity>
             </View>
@@ -108,7 +117,7 @@ export default function TextDisplay(props) {
             <SolidButton
               color={green}
               style={{width:'100%'}}
-              onPress={()=>{setShowIngredients(false)}}
+              onPress={()=> {storeData("ingredientList", store.getIngredients())}}
               labelStyle={{color:'white', fontSize:16}}
               text={`Find Recipes`}
             /> 
