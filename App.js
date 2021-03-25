@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import * as Font from 'expo-font';
-import { Text } from 'react-native';
 
 //Components
 import { TabNav } from './components/nav'
@@ -17,24 +16,40 @@ const loadFonts = () => Font.loadAsync({
 })
 
 export default function App() {
-  const [fontsLoaded, setFontsLoaded] = useState(false);
-
-  SplashScreen.preventAutoHideAsync() // TO DO: HANDLE THEN AND CATCH
-  .then(result => console.log(`SplashScreen.preventAutoHideAsync() succeeded: ${result}`))
-  .catch(console.warn);
+  const [appIsReady, setAppIsReady] = useState(false);
 
   useEffect(() => {
-    (async () => {
-      await loadFonts();
-      setFontsLoaded(true);
-    })();
-  }, [])
+    async function prepare() {
+      try {
+        await SplashScreen.preventAutoHideAsync();
+        await loadFonts();
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        setAppIsReady(true);
+      }
+    }
+
+    prepare();
+  }, []);
 
   useEffect(() => {
-    SplashScreen.hideAsync();
-  }, [fontsLoaded])
-  
+    async function check() {
+      if (appIsReady) {
+        await SplashScreen.hideAsync();
+      } else {
+        return null;
+      }
+    }
+    
+    check()
+  }, [appIsReady]);
+
+  if (!appIsReady) {
+    return null;
+  }
+
   return (
     <TabNav></TabNav>
-  );  
+  ); 
 }
