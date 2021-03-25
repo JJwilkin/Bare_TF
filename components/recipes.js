@@ -112,36 +112,23 @@ function Recipes({ route, navigation }) {
       <PaperProvider theme={global}>
         <View style={styles.mainContainer}>
           <View>
-            <Text style={styles.title}>Recipes</Text>
-            <CardComponent 
+            <EmptyPage 
               title="Hamburger" 
-              subtitle="hello this is subtitle omg hello this is subtitle omg hello this is subtitle omg" 
+              subtitle="hello this is subtitle omg hello this is  omg hello this is subtitle omg" 
               imageUri="https://food.fnr.sndimg.com/content/dam/images/food/fullset/2004/2/25/0/bw2b07_hambugers1.jpg.rend.hgtvcom.616.462.suffix/1558017418187.jpeg"
             />
           </View>
-          <SolidButton
-            color={green}
-            text="Start Cooking"
-            onPress={() => navigation.navigate("Camera")}
-          />
+          {/* onPress={() => navigation.navigate("Camera")} */}
         </View>
       </PaperProvider>
     );
   } else {
     if (isLoading) {
       return (
-        <View style={styles.viewCenter}>
-          <LottieView
-            style={{ width: windowWidth * 0.75, height: windowWidth * 0.75 }}
-            resizeMode="cover"
-            source={require("./loading2.json")}
-            autoPlay
-            loop
-          />
-          <Text style={[styles.subtitle, { marginVertical: 40 }]}>
-            Loading Recipes
-          </Text>
+        <View>
+        
         </View>
+        //TO DO: ADD LOADING VIEW
       );
     } else if (isError) {
       return (
@@ -250,6 +237,7 @@ const styles = StyleSheet.create({
   },
   mainContainer: {
     ...mainContainer,
+    paddingHorizontal: 0
   },
   title: {
     ...title,

@@ -23,9 +23,11 @@ export default function App() {
   .then(result => console.log(`SplashScreen.preventAutoHideAsync() succeeded: ${result}`))
   .catch(console.warn);
 
-  useEffect(async() => {
-    await loadFonts();
-    setFontsLoaded(true);
+  useEffect(() => {
+    (async () => {
+      await loadFonts();
+      setFontsLoaded(true);
+    })();
   }, [])
 
   useEffect(() => {
