@@ -9,15 +9,16 @@ import {
 } from "react-native";
 import { DeviceMotion } from 'expo-sensors';
 import { AntDesign, Ionicons } from '@expo/vector-icons';
-import SolidButton from './components/buttons/solidButton'
+import SolidButton from './components/buttons/solidButton';
 import {title, darkGrey, white, lightOverlay, green, lightGrey } from "./styles";
 import AsyncStorage from '@react-native-community/async-storage';
 const targetAreaPng = require("./assets/targetArea.png");
+import IngredientsView from './IngredientsView';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 export default function CameraOverlay(props) {
-  const { store, styleSheet, frameworkReady } = props;
+  const { store, styleSheet, frameworkReady, takePicture } = props;
   const [word, setWord] = useState("");
   const [showIngredients, setShowIngredients] = useState(false);
   
@@ -79,9 +80,10 @@ export default function CameraOverlay(props) {
   },1000)
 
   return (
-    <View style={[styleSheet.header]}>
-      <View style={styles.topBarContainer}>
-        <TouchableOpacity onPress={() => console.log(getData("ingredientList"))}>
+    <View style={styles.container}>
+      
+      {/* <View style={styles.topBarContainer}>
+        <TouchableOpacity onPress={() => takePicture()}>
           <Ionicons name="arrow-back-circle" size={40} color="white"/>
         </TouchableOpacity>
       </View>
@@ -94,8 +96,10 @@ export default function CameraOverlay(props) {
             text={word}
           />
         </ImageBackground>
-      </View>
-      <View style={styles.centerAlign}>
+      </View> */}
+      <IngredientsView store={store} styles={styles} setShowIngredients={setShowIngredients} />
+      
+      {/* <View style={styles.centerAlign}>
         <SolidButton
           color={white}
           style={{width:'100%'}}
@@ -103,8 +107,8 @@ export default function CameraOverlay(props) {
           labelStyle={{color:'grey', fontSize:16}}
           text={`^ Ingredients ${store.getIngredients().length}`}
         /> 
-      </View>
-      {showIngredients ? 
+      </View> */}
+      {/* {showIngredients ? 
         <View style={styles.modal}>
           <View style={{flex:1}}>
             <View style={styles.modalHeader}>
@@ -127,7 +131,7 @@ export default function CameraOverlay(props) {
             /> 
           </View>
         </View>
-      : null}  
+      : null}   */}
     </View>
   );
 }
@@ -135,9 +139,20 @@ export default function CameraOverlay(props) {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    flexDirection: "column",
+    zIndex:5,
+    flex:1,
+    // padding:25,
+    // paddingTop:45,
+    display:'flex',
+    flexDirection:'column',
+    // alignItems:'center',
+    justifyContent:'space-between'
+    
   },
+  centerAlign: {
+        alignItems:'center', 
+        display:'flex',
+      },
   centerAll: {
     display: "flex",
     flex: 1,
@@ -175,12 +190,13 @@ const styles = StyleSheet.create({
   },
   modal: {
     position: "absolute",
-    top: windowHeight * 0.3,
+    bottom: "0%",
     padding: 30,
     paddingBottom: 10,
-    borderRadius: 30,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
     backgroundColor: "white",
-    width: windowWidth * 0.85,
+    width: windowWidth ,
     height: windowHeight * 0.65,
   },
   modalHeader: {

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Dimensions} from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, Text, View, Dimensions, Button} from 'react-native';
 import { Camera } from 'expo-camera';
 import * as tf from '@tensorflow/tfjs';
 import {cameraWithTensors} from '@tensorflow/tfjs-react-native';
@@ -28,20 +28,21 @@ const windowHeight = Dimensions.get('window').height;
 class WordPrediction {
   word = ""
   showPrediction = false
+  stopPredicting = false
   ingredientList = []
   constructor() {
       makeObservable(this, {
           word: observable,
           toggle: action,
-          getWord: computed,
+          // getWord: computed,
           getShowPrediction: computed,
           prediction: action,
           showPrediction:observable,
 
       })
   }
-  get getWord () {
-    return this.word
+  getWord () {
+    return this.word;
   }
   
   get getShowPrediction () {
@@ -54,6 +55,10 @@ class WordPrediction {
 
   prediction(val) {
     this.showPrediction = val;
+  }
+
+  setStopPrediction(val) {
+    this.stopPredicting = val;
   }
 
   getIngredients() {
@@ -72,6 +77,7 @@ class WordPrediction {
 }
 
 export default function ImageClassificationCamera() {
+  const cameraRef = useRef();
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const store = new WordPrediction();
   const [hasPermission, setHasPermission] = useState(null);
@@ -89,6 +95,12 @@ export default function ImageClassificationCamera() {
   SplashScreen.preventAutoHideAsync() // TO DO: HANDLE THEN AND CATCH
   .then(result => console.log(`SplashScreen.preventAutoHideAsync() succeeded: ${result}`))
   .catch(console.warn);
+
+  const takePicture = async () => {
+    cameraRef.current.camera.takePictureAsync().then(result => {
+      console.log('picture taken')
+    });
+  };
 
   async function load(classifier) {
     let tensorObj = parse(customModel);
@@ -158,6 +170,7 @@ export default function ImageClassificationCamera() {
   const renderCameraView = () => {
     return <View style={styles.cameraView}>
                 <TensorCamera
+                  ref={cameraRef}
                   style={styles.camera}
                   type={Camera.Constants.Type.back}
                   zoom={0}
@@ -174,7 +187,7 @@ export default function ImageClassificationCamera() {
   }
 
   const getPrediction = async (tensor) => {
-    if ((!store.getShowPrediction) || (!tensor && tensor != null) ) return;
+    if ((store.stopPredicting) || (!store.getShowPrediction) || (!tensor && tensor != null) ) return;
 
     const activation = mobilenetModel.infer(tensor, 'conv_preds');
     // Get the most likely class and confidence from the classifier module.
@@ -210,7 +223,8 @@ const handleCameraStream = (imageAsTensors) => {
       <View style={styles.body}>
         { frameworkReady ? renderCameraView() : <Text styles={styles.title}>Loading</Text> }
       </View>  
-      <CameraOverlay store={store} styleSheet={styles} frameworkReady={frameworkReady}/>
+      
+      <CameraOverlay store={store} styleSheet={styles} takePicture={takePicture} frameworkReady={frameworkReady}/>
     </View>
   );
 }
@@ -221,17 +235,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     // paddingTop: 30,
     backgroundColor: '#E8E8E8',
-  },
-  header: {
-    zIndex:10,
-    flex:1,
-    padding:25,
-    paddingTop:45,
-    display:'flex',
-    flexDirection:'column',
-    alignItems:'center',
-    justifyContent:'space-between'
-    
   },
   title: {
     // margin: 10,
