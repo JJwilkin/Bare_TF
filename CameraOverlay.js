@@ -26,6 +26,12 @@ export default function CameraOverlay(props) {
     if (frameworkReady){
       (async () => {
         subscribe();
+        setInterval(()=>{
+          if (store.word !== word){
+            setWord(store.word);
+          }
+          // store.getIngredients();
+        },1000)
       })();
     }
   },[frameworkReady]);
@@ -72,12 +78,7 @@ export default function CameraOverlay(props) {
     DeviceMotion.removeAllListeners();
   }
 
-  setInterval(()=>{
-    if (store.word !== word){
-      setWord(store.word);
-    }
-    store.getIngredients();
-  },1000)
+  
 
   return (
     <View style={styles.container}>
@@ -193,8 +194,8 @@ const styles = StyleSheet.create({
     bottom: "0%",
     padding: 30,
     paddingBottom: 10,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
+    borderTopLeftRadius: 35,
+    borderTopRightRadius: 35,
     backgroundColor: "white",
     width: windowWidth ,
     height: windowHeight * 0.65,

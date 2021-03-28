@@ -72,8 +72,12 @@ class WordPrediction {
   }
 
   removeIngredient(val) {
-    this.ingredientList.remove(val);
+    const index = this.ingredientList.indexOf(val);
+    if (index > -1) {
+      this.ingredientList.splice(index, 1);
+    }
   }
+  
 }
 
 export default function ImageClassificationCamera() {
