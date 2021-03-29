@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, FlatList, Dimensions, TouchableWithoutFeedback, Image, ImageBackground } from "react-native";
-import { Provider as PaperProvider, Text, ActivityIndicator } from "react-native-paper";
+import { StyleSheet, View, FlatList, Dimensions, TouchableWithoutFeedback } from "react-native";
+import { Provider as PaperProvider } from "react-native-paper";
 import { createStackNavigator, TransitionPresets } from "@react-navigation/stack";
-import LottieView from "lottie-react-native";
 
 import oneRecipe from "./oneRecipe.js";
 import SolidButton from "./buttons/solidButton.js";
 import EmptyPage from "./empty.js";
-import CardComponent from "./cardComponent.js"
 import CardTextComponent from "./cardTextComponent.js";
 
 import { apiKeys } from "../config/constants";
