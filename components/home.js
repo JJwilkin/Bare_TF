@@ -6,7 +6,7 @@ import { createStackNavigator } from "@react-navigation/stack"
 
 import Recipes from "./recipes";
 
-import { medGrey, lightGrey, title, mainContainer } from "../styles";
+import { medGrey, lightGrey, title, mainContainer, padding } from "../styles";
 
 const Tab = createMaterialTopTabNavigator();
 const Stack = createStackNavigator();
@@ -47,17 +47,20 @@ function HomeWrapper() {
 const styles = StyleSheet.create({
   mainContainer: {
     ...mainContainer,
+    paddingHorizontal: 0,
     flex: 1,
     backgroundColor: lightGrey,
   },
   title: {
     ...title,
-    marginBottom: 10
+    marginBottom: 10,
+    paddingHorizontal: padding
   },
   tabBar: {
     backgroundColor: "transparent",
     marginBottom: 20,
-    width: '70%'
+    width: '70%',
+    marginHorizontal: padding 
   },
   tabLabel: {
     fontSize: 19,
@@ -69,11 +72,12 @@ const styles = StyleSheet.create({
   },
   tabItem: {
     padding: 0,
-    alignItems: "flex-start"
+    alignItems: "flex-start",
+
   },
   indicator: {
     backgroundColor:'black',
     width: '18%',
-    height: 3
+    height: 3,
   }
 });
