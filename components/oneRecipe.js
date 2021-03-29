@@ -1,14 +1,8 @@
 import React, { useState, useEffect } from "react";
 import {StyleSheet, ScrollView, View, ImageBackground, BackHandler, Dimensions, FlatList, Linking, AsyncStorage, Image} from "react-native";
 import {Provider as PaperProvider, Text, IconButton, Snackbar} from "react-native-paper";
-import { MaterialIcons } from "@expo/vector-icons";
 import { apiKeys } from "../config/constants";
-import { global, view, title, subtitle, chip, padding, grey, darkGrey, green, spaceBetweenView, elevation, overlay, mainContainer, borderRadius, medGrey, yellow, purple, blue, text } from "../styles";
-import { SolidButton } from "./buttons/solidButton";
-import EmptyPage from "./empty";
-
-const windowWidth = Dimensions.get("window").width;
-const windowHeight = Dimensions.get("window").height;
+import { global, view, subtitle, chip, padding, grey, darkGrey, green, spaceBetweenView, elevation, overlay, mainContainer, borderRadius, medGrey, yellow, purple, blue, text } from "../styles";
 
 export default function oneRecipe({ route, navigation }) {
   const [isLoading, setLoading] = useState(true);
@@ -44,7 +38,7 @@ export default function oneRecipe({ route, navigation }) {
       navigation.goBack();
       return true;
     });
-  }, []);
+  }, []); // add route.params.item
 
   // async function getFavs() {
   //   try {
@@ -174,23 +168,6 @@ export default function oneRecipe({ route, navigation }) {
                         style={styles.backIcon}
                       />
                     </View>
-                    
-                  {/* </View> */}
-                  {/* <View style={{ flexDirection: "row" }}>
-                    <MaterialIcons name="access-time" size={36} color="white" />
-                    <Text style={styles.time}>
-                      {recipe.readyInMinutes} mins
-                    </Text>
-                  </View>
-                  <View>
-                    <FlatList
-                      data={recipe.diets}
-                      keyExtractor={(item, index) => index.toString()}
-                      renderItem={({ item, index }) => (
-                        <Text style={styles.info}>{item}</Text>
-                      )}
-                    />
-                  </View> */}
                 </ImageBackground>
               </View>
               <View style={styles.mainContainer}>
