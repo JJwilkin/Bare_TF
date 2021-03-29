@@ -18,20 +18,13 @@ const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 export default function CameraOverlay(props) {
-  const { store, styleSheet, frameworkReady, takePicture } = props;
-  const [word, setWord] = useState("");
-  const [showIngredients, setShowIngredients] = useState(false);
+  const { store, frameworkReady, handleViewRef } = props;
+
   
   useEffect(()=>{
     if (frameworkReady){
       (async () => {
         subscribe();
-        setInterval(()=>{
-          if (store.word !== word){
-            setWord(store.word);
-          }
-          // store.getIngredients();
-        },1000)
       })();
     }
   },[frameworkReady]);
@@ -82,57 +75,7 @@ export default function CameraOverlay(props) {
 
   return (
     <View style={styles.container}>
-      
-      {/* <View style={styles.topBarContainer}>
-        <TouchableOpacity onPress={() => takePicture()}>
-          <Ionicons name="arrow-back-circle" size={40} color="white"/>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.centerAll}>
-        <ImageBackground source={targetAreaPng} style={styles.image}>
-           <SolidButton
-            color={lightOverlay}
-            style={{width:'100%'}}
-            labelStyle={{color: darkGrey, fontSize:16}}
-            text={word}
-          />
-        </ImageBackground>
-      </View> */}
-      <IngredientsView store={store} styles={styles} setShowIngredients={setShowIngredients} />
-      
-      {/* <View style={styles.centerAlign}>
-        <SolidButton
-          color={white}
-          style={{width:'100%'}}
-          onPress={()=>{setShowIngredients(true)}}
-          labelStyle={{color:'grey', fontSize:16}}
-          text={`^ Ingredients ${store.getIngredients().length}`}
-        /> 
-      </View> */}
-      {/* {showIngredients ? 
-        <View style={styles.modal}>
-          <View style={{flex:1}}>
-            <View style={styles.modalHeader}>
-              <Text style={[title, styles.modalTitle]}>Ingredients</Text>
-              <TouchableOpacity onPress={() => setShowIngredients(false)}>
-                <AntDesign name="arrowdown" size={30} color="black" />
-              </TouchableOpacity>
-            </View>
-          {store.getIngredients().map((ingredient)=> (
-            <Text style={styles.text}>{ingredient}</Text>
-          ))}
-          </View>
-          <View style={styles.buttonContainer}>
-            <SolidButton
-              color={green}
-              style={{width:'100%'}}
-              onPress={()=> {storeData("ingredientList", store.getIngredients())}}
-              labelStyle={{color:'white', fontSize:16}}
-              text={`Find Recipes`}
-            /> 
-          </View>
-        </View>
-      : null}   */}
+      <IngredientsView store={store} handleViewRef={handleViewRef} styles={styles}  />
     </View>
   );
 }

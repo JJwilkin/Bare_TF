@@ -1,162 +1,39 @@
 import React, {useState, useEffect} from 'react';
-import {View, TouchableOpacity, Text, Dimensions, StyleSheet, Button, ImageBackground, ScrollView} from 'react-native';
+import {View, TouchableOpacity, Text, Dimensions, StyleSheet, TextInput, ImageBackground, ScrollView} from 'react-native';
 import SolidButton from './components/buttons/solidButton';
 import {title, darkGrey, text, white, lightOverlay, green, lightGrey, subtitle } from "./styles";
-import { AntDesign, Feather, Ionicons } from '@expo/vector-icons';
+import { AntDesign, Entypo, Ionicons } from '@expo/vector-icons';
 import Animated from 'react-native-reanimated';
 import BottomSheet from 'reanimated-bottom-sheet';
 import AsyncStorage from '@react-native-community/async-storage';
-
+import * as Animatable from 'react-native-animatable';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 const modalHeight = Math.floor(windowHeight * 0.65);
 const modalHalfHeight = Math.floor(windowHeight * 0.25);
 const targetAreaPng = require("./assets/targetArea.png");
 
-
-// export default function IngredientsView(props) {
-//   const [ingredientList, setIngredientList] = useState([]);
-
-//   useEffect(()=> {
-//     setInterval(()=> {setIngredientList(props.store.getIngredients()); console.log(props.store.getIngredients())}, 500);
-//   }, [])
-  
-//   const renderContent = () => (
-//     <View
-//       style={{
-//         backgroundColor: 'white',
-//         // padding: 16,
-//         // height: 450,
-//         padding: 30,
-//         paddingBottom: 10,
-//         backgroundColor: "white",
-//         width: windowWidth ,
-//         height: modalHeight,
-//       }}
-//     >
-//       <View style={{ flex: 5}}>
-//               <View style={props.styles.modalHeader}>
-//                 <Text style={[title, props.styles.modalTitle]}>
-//                   Ingredients
-//                 </Text>
-//                 <TouchableOpacity
-//                   onPress={() => {
-//                     console.log(Object.keys(sheetRef.current.context))
-//                     sheetRef.current.snapTo(2)
-//                   }}
-//                 >
-//                   <AntDesign name="arrowdown" size={35} color="black" />
-//                 </TouchableOpacity>
-//               </View>
-//               <ScrollView style={{flex:1}}>
-//                 {ingredientList.map((ingredient) => (
-//                   <View style={styles.ingredientItem}>
-//                     <Text style={props.styles.text}>{ingredient}</Text>
-//                     <TouchableOpacity
-//                       onPress={() => {
-//                         props.store.removeIngredient(ingredient);
-//                       }}
-//                     >
-//                     <Ionicons name="remove-circle-outline" size={30} color="red" />
-//                   </TouchableOpacity>
-//                   </View>
-//                 ))}
-//               </ScrollView>
-//           </View>
-//           <View style={[props.styles.buttonContainer]}>
-//                <SolidButton
-//                 color={green}
-//                  style={{ width: "100%" }}
-//                  onPress={() => {
-//                   //  this.props.store.setStopPrediction(true);
-//                    storeData(
-//                      "ingredientList",
-//                      ingredientList
-//                    );
-//                  }}
-//                  labelStyle={{ color: "white", fontSize: 16 }}
-//                  text={`Find Recipes`}
-//                />
-//              </View>
-//     </View>
-//   );
-
-//   const storeData = async (key, value) => {
-//     try {
-//       const jsonValue = JSON.stringify(value)
-//       console.log(jsonValue);
-//       await AsyncStorage.setItem(key, jsonValue)
-//     } catch (e) {
-//       console.log(e)
-//     }
-//   };
-
-//   const getData = async (key) => {
-//     try {
-//       const jsonValue = await AsyncStorage.getItem(key)
-//       console.log(JSON.parse(jsonValue))
-//       return JSON.parse(jsonValue);
-//     } catch(e) {
-//       console.log(e)
-//     }
-//   }
-//   const sheetRef = React.useRef(null);
-
-//   return (
-//     <>
-//     <View style={{position:'absolute', top:windowHeight*0.05, left:0, right:0}}>
-//           <Text style={[text, styles.cameraText]}>Added</Text>
-//           <Text style={[subtitle, styles.cameraText]}>{props.store.getWord()}</Text>
-//         </View>
-//      <View style={styles.container}>
-     
-
-//         <View style={[styles.centerAll,]}>
-        
-//           <ImageBackground source={targetAreaPng} style={styles.image}>
-//             {props.store.getWord() ? (
-//               <SolidButton
-//                 color={lightOverlay}
-//                 style={{ width: "100%" }}
-//                 labelStyle={{ color: darkGrey, fontSize: 16 }}
-//                 text={props.store.getWord()}
-//               />
-//             ) : null}
-//           </ImageBackground>
-//         </View>
-//         <TouchableOpacity onPress={()=>sheetRef.current.snapTo(0)}>
-//           <View style={{backgroundColor: green, borderRadius:25, paddingHorizontal:23, paddingVertical:15}}>
-//             <Text style={{color:"white", fontWeight:'500', fontSize:18, }}>My Ingredients: {props.store.getIngredients().length}</Text>
-//           </View>
-//         </TouchableOpacity>
-//       </View>
-//       <BottomSheet
-//         ref={sheetRef}
-//         snapPoints={[modalHeight, modalHalfHeight, 0]}
-//         borderRadius={35}
-//         initialSnap={2}
-//         renderContent={renderContent}
-//       />
-//     </>
-//   );
-// }
-
 export default class IngredientsView extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {ingredientList: []}
+    this.state = {ingredientList: [], word: "", lastWord: "", modalVisible: true}
     this.sheetRef = React.createRef();
     this.intervalId = 0;
   }
-
-  componentDidMount() {
-    this.intervalId = setInterval(()=> {this.setState({...this.state, ingredientList: this.props.store.getIngredients()})}, 250);
+  async componentDidMount() {
+    this.intervalId = setInterval(()=> {this.updateUi()}, 250);
   }
 
   componentWillUnmount() {
     clearInterval(this.intervalId);
   }
 
+  updateUi = () => {
+    if (this.props.store.getShouldBounce()) {
+      this.bounce()
+    }
+    this.setState({...this.state, ingredientList: this.props.store.getIngredients(), word: this.props.store.getWord(), lastWord: this.props.store.getLastWord() })
+  }
 
   renderContent = () => (
     <View
@@ -198,6 +75,14 @@ export default class IngredientsView extends React.Component {
                   </TouchableOpacity>
                   </View>
                 ))}
+                <TextInput
+              style={this.props.styles.text}
+              // onChangeText={onChangeNumber}
+              // value={number}
+              placeholderTextColor={darkGrey}
+              placeholder="Enter Ingredient"
+
+            />
               </ScrollView>
           </View>
           <View style={[this.props.styles.buttonContainer]}>
@@ -241,39 +126,106 @@ export default class IngredientsView extends React.Component {
   render() {
     return (
       <>
-    <View style={{position:'absolute', top:windowHeight*0.05, left:0, right:0}}>
-          <Text style={[text, styles.cameraText]}>Added</Text>
-          <Text style={[subtitle, styles.cameraText]}>{this.props.store.getWord()}</Text>
-        </View>
-     <View style={styles.container}>
-        <View style={[styles.centerAll,]}>
-        
-          <ImageBackground source={targetAreaPng} style={styles.image}>
-            {this.props.store.getWord() ? (
-              <SolidButton
-                color={lightOverlay}
-                style={{ width: "100%" }}
-                labelStyle={{ color: darkGrey, fontSize: 16 }}
-                text={this.props.store.getWord()}
-              />
-            ) : null}
-          </ImageBackground>
-        </View>
-        <TouchableOpacity onPress={()=> {this.props.store.setStopPrediction(true);this.sheetRef.current.snapTo(0); }}>
-          <View style={{backgroundColor: green, borderRadius:25, paddingHorizontal:23, paddingVertical:15}}>
-            <Text style={{color:"white", fontWeight:'500', fontSize:18, }}>My Ingredients: {this.props.store.getIngredients().length}</Text>
+        {this.state.lastWord ? (
+          <View style={{position: "absolute",top: windowHeight * 0.05,left: 0,right: 0,}}>
+            <Text style={[text, styles.cameraText]}>Added</Text>
+            <Text style={[subtitle, styles.cameraText]}>
+              {this.state.lastWord}
+            </Text>
           </View>
-        </TouchableOpacity>
-      </View>
-      <BottomSheet
-        ref={this.sheetRef}
-        snapPoints={[modalHeight, 0, 0]}
-        borderRadius={35}
-        initialSnap={2}
-        onCloseEnd={() => this.props.store.setStopPrediction(false)}
-        renderContent={this.renderContent}
-      />
-    </>
+        ) : null}
+        <View style={{position: "absolute",top: windowHeight * 0.06,right: windowHeight * 0.04,}}>
+            <TouchableOpacity
+                // onPress={() => {
+                //   this.props.store.removeIngredient(ingredient);
+                // }}
+              >
+                <Entypo name="add-to-list" size={30} color="white" />
+            </TouchableOpacity>
+          </View>
+          {/* <View style={{padding:18,display:'flex', justifyContent:'space-between', position: "absolute",top: 30,left: windowWidth*0.05, zIndex:15, height:windowHeight* 0.4 , borderRadius:30, width: windowWidth*0.9, backgroundColor:'white'}}>
+            <Text style={[title, this.props.styles.modalTitle, {fontSize:25}]}>Manually Add Ingredient</Text>
+            <TextInput
+              style={{color:"black", fontWeight:'500', borderBottomWidth: 1, paddingBottom: 5, fontSize:18}}
+              // onChangeText={onChangeNumber}
+              // value={number}
+              placeholderTextColor={darkGrey}
+              placeholder="Enter Ingredient"
+
+            />
+            <SolidButton
+              color={green}
+              style={{ width: "100%" , marginBottom:0, marginTop:0,}}
+              labelStyle={{ color: 'white', fontSize: 16 }}
+              text="Add"
+            />
+          </View> */}
+          
+        <View style={[styles.container,]}>
+          <View style={[styles.centerAll]}>
+            <ImageBackground source={targetAreaPng} style={styles.image}>
+              {this.state.word ? (
+                // <SolidButton
+                //   color={lightOverlay}
+                //   style={{ width: "100%" }}
+                //   labelStyle={{ color: darkGrey, fontSize: 16 }}
+                //   text={this.state.word}
+                // />
+              <TouchableOpacity
+                onPress={() => {
+                  this.props.store.setStopPrediction(true);
+                  this.sheetRef.current.snapTo(0);
+                }}
+              >
+                <View
+                  useNativeDriver={true}
+                  style={{
+                    backgroundColor: lightOverlay,
+                    borderRadius: 25,
+                    paddingHorizontal: 23,
+                    paddingVertical: 15,
+                  }}
+                >
+                  <Text style={{ color: darkGrey, fontWeight: "500", fontSize: 16 }}>
+                    {this.state.word}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+
+              ) : null}
+            </ImageBackground>
+          </View>
+          <TouchableOpacity
+            onPress={() => {
+              this.props.store.setStopPrediction(true);
+              this.sheetRef.current.snapTo(0);
+            }}
+          >
+            <Animatable.View
+              ref={this.props.handleViewRef}
+              useNativeDriver={true}
+              style={{
+                backgroundColor: green,
+                borderRadius: 25,
+                paddingHorizontal: 23,
+                paddingVertical: 15,
+              }}
+            >
+              <Text style={{ color: "white", fontWeight: "500", fontSize: 18 }}>
+                Ingredients: {this.props.store.getIngredients().length}
+              </Text>
+            </Animatable.View>
+          </TouchableOpacity>
+        </View>
+        <BottomSheet
+          ref={this.sheetRef}
+          snapPoints={[modalHeight, 0, 0]}
+          borderRadius={35}
+          initialSnap={2}
+          onCloseEnd={() => this.props.store.setStopPrediction(false)}
+          renderContent={this.renderContent}
+        />
+      </>
     );
   }
 }

@@ -8,7 +8,7 @@ import * as knnClassifier from '@tensorflow-models/knn-classifier';
 import { makeObservable, observable, action, computed } from "mobx"
 import CameraOverlay from './CameraOverlay';
 import * as Font from 'expo-font';
-
+import { Audio } from 'expo-av';
 //Components
 import * as SplashScreen from 'expo-splash-screen';
 
@@ -27,13 +27,14 @@ const windowHeight = Dimensions.get('window').height;
 
 class WordPrediction {
   word = ""
+  lastWord = ""
   showPrediction = false
   stopPredicting = false
+  shouldBounce = false
   ingredientList = []
   constructor() {
       makeObservable(this, {
           word: observable,
-          toggle: action,
           // getWord: computed,
           getShowPrediction: computed,
           prediction: action,
@@ -44,14 +45,30 @@ class WordPrediction {
   getWord () {
     return this.word;
   }
+
+  getLastWord () {
+    return this.lastWord;
+  }
+
+  getShouldBounce () {
+    return this.shouldBounce;
+  }
   
   get getShowPrediction () {
     return this.showPrediction;
   }
 
-  toggle(word) {
+  setWord(word) {
       this.word = word;
   }
+
+  setShouldBounce(val) {
+    this.shouldBounce = val;
+  }
+
+  setLast(lastWord) {
+    this.lastWord = lastWord;
+}
 
   prediction(val) {
     this.showPrediction = val;
@@ -92,7 +109,10 @@ export default function ImageClassificationCamera() {
   const [classifier, setClassifier] = useState();
   const [frameworkReady, setFrameworkReady] = useState(false);
   const [predictionFound, setPredictionFound] = useState(false);
+  const [sound, setSound] = useState();
 
+  const handleViewRef = useRef();
+  const bounce = () => handleViewRef.current.bounce(1750).then(endState => console.log(endState.finished ? 'bounce finished' : 'bounce cancelled'));
   const textureDims = Platform.OS === "ios"? { width: 1080, height: 1920 } : { width: 1600, height: 1200 };
   const tensorDims = { width: 152, height: 200 }; 
 
@@ -151,9 +171,20 @@ export default function ImageClassificationCamera() {
     }
   }, []);
 
-  useEffect(async() => {
+  useEffect(() => {
+    (async () => {
     await loadFonts();
     setFontsLoaded(true);
+    })();
+  }, [])
+
+  useEffect(()=> {
+    (async () => {
+      const {sound} = await Audio.Sound.createAsync(
+        require('./assets/chime.mp3')
+      )
+      setSound(sound);
+    })();
   }, [])
 
   useEffect(() => {
@@ -165,6 +196,12 @@ export default function ImageClassificationCamera() {
       cancelAnimationFrame(requestAnimationFrameId);
     };
   }, [requestAnimationFrameId]);
+
+  const playSound = async () => {
+    console.log('playing')
+    sound.setPositionAsync(0);
+    await sound.playAsync(); 
+  }
 
   const loadMobileNetModel = async () => {
     const model = await mobilenet.load();
@@ -198,11 +235,18 @@ export default function ImageClassificationCamera() {
       const result = await classifier.predictClass(activation);
       const prediction = `${result.label} ${result.confidences[result.label]}`
       if (result.confidences[result.label] > 0.8) {
-        store.toggle(prediction);
+        if (!store.ingredientList.includes(result.label)){
+          bounce();
+          // colorShift();
+          await playSound();
+          store.setLast(result.label);
+        }
+        store.setWord(prediction);
         store.addIngredient(result.label);
+        
       }
       else {
-        store.toggle("Scanning...")
+        store.setWord("Scanning...")
       }
   }
 
@@ -228,7 +272,7 @@ const handleCameraStream = (imageAsTensors) => {
         { frameworkReady ? renderCameraView() : <Text styles={styles.title}>Loading</Text> }
       </View>  
       
-      <CameraOverlay store={store} styleSheet={styles} takePicture={takePicture} frameworkReady={frameworkReady}/>
+      <CameraOverlay store={store} styleSheet={styles} handleViewRef={handleViewRef} takePicture={takePicture} frameworkReady={frameworkReady}/>
     </View>
   );
 }
