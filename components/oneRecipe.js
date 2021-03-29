@@ -2,9 +2,8 @@ import React, { useState, useEffect } from "react";
 import {StyleSheet, ScrollView, View, ImageBackground, BackHandler, Dimensions, FlatList, Linking, AsyncStorage, Image} from "react-native";
 import {Provider as PaperProvider, Text, IconButton, Snackbar} from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
-import LottieView from "lottie-react-native";
 import { apiKeys } from "../config/constants";
-import { global, view, title, subtitle, chip, padding, grey, darkGrey, green, spaceBetweenView } from "../styles";
+import { global, view, title, subtitle, chip, padding, grey, darkGrey, green, spaceBetweenView, elevation, overlay } from "../styles";
 import { SolidButton } from "./buttons/solidButton";
 import EmptyPage from "./empty";
 
@@ -29,16 +28,16 @@ export default function oneRecipe({ route, navigation }) {
 
   const url = base + item.id + "/information" + "?apiKey=";
 
-  useEffect(() => {
-    setTimeout(function () {
-      if (visible) {
-        setVisible(false);
-      }
-    }, 1500);
-  }, [visible]);
+  // useEffect(() => {
+  //   setTimeout(function () {
+  //     if (visible) {
+  //       setVisible(false);
+  //     }
+  //   }, 1500);
+  // }, [visible]);
 
   useEffect(() => {
-    getFavs();
+    // getFavs();
     getRecipes();
 
     BackHandler.addEventListener("hardwareBackPress", () => {
@@ -47,18 +46,18 @@ export default function oneRecipe({ route, navigation }) {
     });
   }, []);
 
-  async function getFavs() {
-    try {
-      const value = await AsyncStorage.getItem("favRecipes");
-      const parsedValue = JSON.parse(value);
-      if (parsedValue && parsedValue !== null) {
-        await setFavs(parsedValue);
-      }
-    } catch (e) {
-      Promise.reject(e);
-      fromSavedPage = true;
-    }
-  }
+  // async function getFavs() {
+  //   try {
+  //     const value = await AsyncStorage.getItem("favRecipes");
+  //     const parsedValue = JSON.parse(value);
+  //     if (parsedValue && parsedValue !== null) {
+  //       await setFavs(parsedValue);
+  //     }
+  //   } catch (e) {
+  //     Promise.reject(e);
+  //     fromSavedPage = true;
+  //   }
+  // }
 
   async function saveRecipe(recipe) {
     const value = await AsyncStorage.getItem("favRecipes");
@@ -127,16 +126,7 @@ export default function oneRecipe({ route, navigation }) {
   if (isLoading) {
     return (
       <View style={styles.viewCenter}>
-        <LottieView
-          style={{ width: windowWidth * 0.75, height: windowWidth * 0.75 }}
-          resizeMode="cover"
-          source={require("./loading2.json")}
-          autoPlay
-          loop
-        />
-        <Text style={[styles.subtitle, { marginVertical: 40 }]}>
-          Loading Recipe
-        </Text>
+        {/* //TO DO: Loading view */}
       </View>
     );
   } else {
@@ -144,28 +134,7 @@ export default function oneRecipe({ route, navigation }) {
       return (
         <PaperProvider theme={global}>
           <View style={styles.spaceBetweenView}>
-            <View>
-              <View style={[styles.row, { backgroundColor: green }]}>
-                <Text style={styles.title}>Recipe</Text>
-                <IconButton
-                  onPress={() => navigation.goBack()}
-                  icon="keyboard-backspace"
-                  color="white"
-                  size={36}
-                  style={styles.icon}
-                />
-              </View>
-              <EmptyPage
-                image={
-                  <Image
-                    style={styles.emptyImage}
-                    source={require("../assets/error.png")}
-                  />
-                }
-                title="OH NO"
-                text={["Something went wrong. Please try again."]}
-              />
-            </View>
+            {/* TO DO: ERROR */}
           </View>
         </PaperProvider>
       );
@@ -173,7 +142,7 @@ export default function oneRecipe({ route, navigation }) {
       return (
         <PaperProvider theme={global}>
           <View style={styles.view}>
-            <View style={[styles.row, { backgroundColor: green }]}>
+            {/* <View style={[styles.row, { backgroundColor: green }]}>
               <Text
                 style={[
                   styles.title,
@@ -189,7 +158,7 @@ export default function oneRecipe({ route, navigation }) {
                 size={36}
                 style={styles.icon}
               />
-            </View>
+            </View> */}
             <ScrollView showsVerticalScrollIndicator={false}>
               <View style={styles.imageContainer}>
                 <ImageBackground
@@ -198,7 +167,34 @@ export default function oneRecipe({ route, navigation }) {
                   resizeMode="cover"
                 >
                   <View style={styles.overlay}></View>
-                  <View style={{ flexDirection: "row" }}>
+                  {/* <View style={styles.header}> */}
+                    <IconButton
+                      onPress={() => navigation.goBack()}
+                      icon="keyboard-backspace"
+                      color="white"
+                      size={36}
+                      style={styles.backIcon}
+                    />
+                    <View style={styles.headerRow}>
+                      <Text
+                        style={[
+                          styles.title,
+                          item.title.length > 24 ? styles.smaller : styles.none,
+                        ]}
+                      >
+                      {recipe.title}
+                      </Text>
+                      <IconButton
+                        onPress={() => navigation.goBack()}
+                        icon="heart"
+                        color="white"
+                        size={30}
+                        style={styles.backIcon}
+                      />
+                    </View>
+                    
+                  {/* </View> */}
+                  {/* <View style={{ flexDirection: "row" }}>
                     <MaterialIcons name="access-time" size={36} color="white" />
                     <Text style={styles.time}>
                       {recipe.readyInMinutes} mins
@@ -212,10 +208,10 @@ export default function oneRecipe({ route, navigation }) {
                         <Text style={styles.info}>{item}</Text>
                       )}
                     />
-                  </View>
+                  </View> */}
                 </ImageBackground>
               </View>
-              <Text style={styles.subtitle}>Ingredients</Text>
+              {/* <Text style={styles.subtitle}>Ingredients</Text>
               <FlatList
                 style={styles.list}
                 data={recipe.extendedIngredients}
@@ -288,7 +284,7 @@ export default function oneRecipe({ route, navigation }) {
                     </View>
                   );
                 }
-              })()}
+              })()} */}
             </ScrollView>
             <View style={styles.snackbarView}>
               <Snackbar
@@ -315,6 +311,49 @@ export default function oneRecipe({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
+  imageBackground: {
+    height: 250,
+    width: Dimensions.get("window").width,
+    overflow: "hidden",
+    shadowColor: "black",
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: elevation,
+    justifyContent: "space-between",
+    padding: 20,
+  },
+  overlay: {
+    height: 250,
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: overlay,
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start"
+  },
+  imageContainer: {
+    marginVertical: 20,
+    height: '100%',
+    justifyContent: "space-between"
+  },
+  title: {
+    ...subtitle,
+    color: "white",
+    flexWrap: "wrap",
+    fontSize: 30,
+    maxWidth: '80%'
+  },
+  backIcon: {
+    margin: 0,
+    padding: 0
+  },
+
+
   emptyImage: {
     marginTop: 0,
     resizeMode: "contain",
@@ -333,18 +372,11 @@ const styles = StyleSheet.create({
   spaceBetweenView: {
     ...spaceBetweenView,
   },
-  title: {
-    ...title,
-    flexWrap: "wrap",
-    flex: 3,
-    marginBottom:0
-  },
+
   smaller: {
     fontSize: 24,
   },
-  icon: {
-    marginTop: 75,
-  },
+
   subtitle: {
     ...subtitle,
   },
@@ -354,32 +386,9 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
   },
-  imageContainer: {
-    alignItems: "center",
-    marginVertical: 20,
-    height: 310,
-  },
-  overlay: {
-    height: 360,
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.3)",
-  },
-  imageBackground: {
-    height: 300,
-    width: Dimensions.get("window").width - 32,
-    borderRadius: 10,
-    overflow: "hidden",
-    shadowColor: "black",
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-    elevation: 6,
-    justifyContent: "space-between",
-    padding: 20,
-  },
+
+
+
   time: {
     ...subtitle,
     color: "white",

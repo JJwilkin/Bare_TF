@@ -97,10 +97,10 @@ function Recipes({ route, navigation }) {
       });
   };
 
-  // const isFocused = useIsFocused()
-  // useEffect(() => {
-  //   getRecipes(base + "?ingredients=" + foodItems.join(", ") + "&apiKey=")
-  // }, [isFocused])
+  const isFocused = useIsFocused()
+  useEffect(() => {
+    getRecipes(base + "?ingredients=" + foodItems.join(", ") + "&apiKey=")
+  }, [isFocused])
   
   if (foodItems.length === 0) {
     return (
@@ -162,9 +162,8 @@ function Recipes({ route, navigation }) {
 
   function _renderItem({ item }, navigation) {
     return (
-      <TouchableWithoutFeedback
-        onPress={() => navigation.navigate("oneRecipe", { item: item })}
-      >
+      <TouchableWithoutFeedback onPress={() => console.log(navigation.navigate("oneRecipe", {item: item})) }>
+      {/* // navigation.navigate("oneRecipe", { item: item }) */}
         <View style={styles.recipesItem}>
           <CardTextComponent
             imageUri={item.image}
