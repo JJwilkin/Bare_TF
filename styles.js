@@ -16,6 +16,9 @@ export const darkGrey = "#787878";
 export const medGrey = "#949494";
 export const overlay = "rgba(0,0,0,0.55)";
 export const lightOverlay = "rgba(255,255,255,0.85)";
+export const blue = "#1389DF";
+export const purple = "#AC39D8";
+export const yellow = "#E2B143";
 
 //Theme
 export const global = {

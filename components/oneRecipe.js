@@ -3,7 +3,7 @@ import {StyleSheet, ScrollView, View, ImageBackground, BackHandler, Dimensions, 
 import {Provider as PaperProvider, Text, IconButton, Snackbar} from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
 import { apiKeys } from "../config/constants";
-import { global, view, title, subtitle, chip, padding, grey, darkGrey, green, spaceBetweenView, elevation, overlay } from "../styles";
+import { global, view, title, subtitle, chip, padding, grey, darkGrey, green, spaceBetweenView, elevation, overlay, mainContainer, borderRadius, medGrey, yellow, purple, blue, text } from "../styles";
 import { SolidButton } from "./buttons/solidButton";
 import EmptyPage from "./empty";
 
@@ -142,23 +142,6 @@ export default function oneRecipe({ route, navigation }) {
       return (
         <PaperProvider theme={global}>
           <View style={styles.view}>
-            {/* <View style={[styles.row, { backgroundColor: green }]}>
-              <Text
-                style={[
-                  styles.title,
-                  item.title.length > 24 ? styles.smaller : styles.none,
-                ]}
-              >
-                {recipe.title}
-              </Text>
-              <IconButton
-                onPress={() => navigation.goBack()}
-                icon="keyboard-backspace"
-                color="white"
-                size={36}
-                style={styles.icon}
-              />
-            </View> */}
             <ScrollView showsVerticalScrollIndicator={false}>
               <View style={styles.imageContainer}>
                 <ImageBackground
@@ -167,7 +150,6 @@ export default function oneRecipe({ route, navigation }) {
                   resizeMode="cover"
                 >
                   <View style={styles.overlay}></View>
-                  {/* <View style={styles.header}> */}
                     <IconButton
                       onPress={() => navigation.goBack()}
                       icon="keyboard-backspace"
@@ -185,7 +167,7 @@ export default function oneRecipe({ route, navigation }) {
                       {recipe.title}
                       </Text>
                       <IconButton
-                        onPress={() => navigation.goBack()}
+                        onPress={() => console.log(recipe)}
                         icon="heart"
                         color="white"
                         size={30}
@@ -211,21 +193,41 @@ export default function oneRecipe({ route, navigation }) {
                   </View> */}
                 </ImageBackground>
               </View>
-              {/* <Text style={styles.subtitle}>Ingredients</Text>
-              <FlatList
-                style={styles.list}
-                data={recipe.extendedIngredients}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item, index }) => (
-                  <View style={styles.ingredient}>
-                    <Text style={styles.ingredientName}>{item.name}</Text>
-                    <Text style={styles.ingredientAmount}>
-                      {item.measures.us.amount} {item.measures.us.unitShort}
-                    </Text>
+              <View style={styles.mainContainer}>
+                <View style={styles.infoSection}>
+                  <View style={[styles.littleCard, {marginRight: 10}]}>
+                    <Text style={[styles.littleCardText, {color: green, fontSize: 24}]}>{recipe.readyInMinutes}</Text>
+                    <Text style={[styles.littleCardText, {color: darkGrey}]}>min to prep</Text>
                   </View>
-                )}
-              />
-              <Text style={styles.subtitle}>Recipe</Text>
+                  <View style={styles.littleCard}>
+                    <Text style={[styles.littleCardText, {color: yellow, fontSize: 24}]}>{recipe.extendedIngredients.length}</Text>
+                    <Text style={[styles.littleCardText, {color: darkGrey}]}>ingredients</Text>
+                  </View>
+                </View>
+                <View style={styles.infoSection}>
+                  <View style={[styles.littleCard, {marginRight: 10}]}>
+                    <Text style={[styles.littleCardText, {color: purple, fontSize: 24}]}>{recipe.servings}</Text>
+                    <Text style={[styles.littleCardText, {color: darkGrey}]}>servings</Text>
+                  </View>
+                  <View style={styles.littleCard}>
+                    <Text style={[styles.littleCardText, {color: blue, fontSize: 24}]}>{recipe.cookingMinutes}</Text>
+                    <Text style={[styles.littleCardText, {color: darkGrey}]}>min to cook</Text>
+                  </View>
+                </View>
+                <Text style={styles.subtitle}>Ingredients</Text>
+                <FlatList
+                  data={recipe.extendedIngredients}
+                  keyExtractor={(item, index) => index.toString()}
+                  renderItem={({ item, index }) => (
+                    <View style={styles.ingredient}>
+                      <Text style={styles.ingredientName}>{item.name}</Text>
+                      <Text style={styles.ingredientAmount}>
+                        {item.measures.us.amount} {item.measures.us.unitShort}
+                      </Text>
+                    </View>
+                  )}
+                />
+                <Text style={styles.subtitle}>Recipe</Text>
               {(() => {
                 if (recipe.analyzedInstructions.length > 0) {
                   return (
@@ -269,6 +271,9 @@ export default function oneRecipe({ route, navigation }) {
                   );
                 }
               })()}
+              </View>
+              
+              {/* 
               {(() => {
                 if (!fromSavedPage) {
                   return (
@@ -337,8 +342,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start"
   },
   imageContainer: {
-    marginVertical: 20,
-    height: '100%',
+    height: 250,
     justifyContent: "space-between"
   },
   title: {
@@ -352,6 +356,84 @@ const styles = StyleSheet.create({
     margin: 0,
     padding: 0
   },
+  mainContainer: {
+    ...mainContainer,
+    paddingTop: 20
+  },
+  infoSection: {
+    flexDirection: "row",
+    marginBottom: 10,
+    justifyContent: "space-between",
+
+  },
+  littleCard: {
+    elevation: 25,
+    backgroundColor: "white",
+    borderRadius: borderRadius,
+    flex: 1,
+    padding: 20,
+    justifyContent: "center",
+  },
+  littleCardText: {
+    fontFamily: "SF-Semibold",
+    fontSize: 18
+  },
+  subtitle: {
+    ...subtitle,
+    marginTop: 20,
+    marginBottom: 20
+  },
+  ingredient: {
+    ...chip,
+    justifyContent: "space-between",
+    flexDirection: "row",
+    backgroundColor: grey,
+    borderRadius: 10,
+    marginBottom: 8,
+    alignItems: "center",
+  },
+  ingredientName: {
+    ...text,
+    paddingLeft: 6,
+    paddingVertical: 4,
+  },
+  ingredientAmount: {
+    ...text,
+    color: green,
+    paddingRight: 6,
+    fontFamily: "SF-Medium"
+  },
+  recipeStep: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    marginBottom: 20,
+  },
+  stepNumberContainer: {
+    backgroundColor: grey,
+    width: 40,
+    height: 40,
+    borderRadius: 35 / 2,
+    marginRight: 15,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: 2,
+  },
+  stepNumber: {
+    ...chip,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    marginBottom: 0,
+    fontSize: 18,
+    backgroundColor: "transparent",
+  },
+  instructions: {
+    fontSize: 18,
+    flex: 1,
+    flexWrap: "wrap",
+  },
+
+
 
 
   emptyImage: {
@@ -377,9 +459,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
 
-  subtitle: {
-    ...subtitle,
-  },
+
   padding: {
     ...padding,
   },
@@ -398,59 +478,9 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 18,
   },
-  list: {
-    marginHorizontal: 16,
-    marginVertical: 12,
-  },
-  ingredient: {
-    ...chip,
-    justifyContent: "space-between",
-    flexDirection: "row",
-    backgroundColor: grey,
-    borderRadius: 10,
-    marginBottom: 8,
-    alignItems: "center",
-  },
-  ingredientName: {
-    fontSize: 16,
-    color: darkGrey,
-    paddingLeft: 6,
-    paddingVertical: 4,
-  },
-  ingredientAmount: {
-    fontSize: 16,
-    color: green,
-    paddingRight: 6,
-  },
-  recipeStep: {
-    flexDirection: "row",
-    justifyContent: "flex-start",
-    alignItems: "flex-start",
-    marginBottom: 12,
-  },
-  stepNumberContainer: {
-    backgroundColor: grey,
-    width: 35,
-    height: 35,
-    borderRadius: 35 / 2,
-    marginRight: 15,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingTop: 2,
-  },
-  stepNumber: {
-    ...chip,
-    paddingVertical: 0,
-    paddingHorizontal: 0,
-    marginBottom: 0,
-    fontSize: 14,
-    backgroundColor: "transparent",
-  },
-  instructions: {
-    flex: 1,
-    flexWrap: "wrap",
-    fontSize: 15,
-  },
+
+ 
+
   link: {
     color: green,
     marginTop: 10,
