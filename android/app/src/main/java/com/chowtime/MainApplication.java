@@ -6,6 +6,7 @@ import android.net.Uri;
 
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.reactlibrary.TesseractOcrPackage;
 import com.th3rdwave.safeareacontext.SafeAreaContextPackage;
 import com.rnfs.RNFSPackage;
 import com.rnfs.RNFSPackage;

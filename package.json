@@ -47,6 +47,7 @@
     "react-native-sliding-up-down-panel": "^1.0.0",
     "react-native-sliding-up-down-panels": "^1.0.0",
     "react-native-tab-view": "^2.16.0",
+    "react-native-tesseract-ocr": "^2.0.1",
     "react-native-unimodules": "~0.12.0",
     "react-native-web": "~0.13.12",
     "reanimated-bottom-sheet": "^1.0.0-alpha.22",
