@@ -30,6 +30,7 @@ export function TabNav() {
         }}
         tabBarOptions={{
           activeTintColor: '#e91e63',
+          keyboardHidesTabBar: false,
         }}
       >
         <Tab.Screen

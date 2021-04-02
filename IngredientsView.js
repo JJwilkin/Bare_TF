@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, TouchableOpacity, Text, Dimensions, StyleSheet, TextInput, ImageBackground, ScrollView} from 'react-native';
+import {View, TouchableOpacity, Text, Dimensions, StyleSheet, TextInput, ImageBackground, ScrollView, Keyboard} from 'react-native';
 import SolidButton from './components/buttons/solidButton';
 import {title, darkGrey, text, white, lightOverlay, green, lightGrey, subtitle } from "./styles";
 import { AntDesign, Entypo, Ionicons } from '@expo/vector-icons';
@@ -16,13 +16,15 @@ const targetAreaPng = require("./assets/targetArea.png");
 export default class IngredientsView extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {ingredientList: [], word: "", lastWord: "", modalVisible: true}
+    this.state = {ingredientList: [], word: "", lastWord: "", showAddIngredient: false, manualIngredient: ""}
     this.sheetRef = React.createRef();
     this.intervalId = 0;
+    this.handleChange= this.handleChange.bind(this);
   }
   async componentDidMount() {
     this.intervalId = setInterval(()=> {this.updateUi()}, 250);
   }
+
 
   componentWillUnmount() {
     clearInterval(this.intervalId);
@@ -33,6 +35,18 @@ export default class IngredientsView extends React.Component {
       this.bounce()
     }
     this.setState({...this.state, ingredientList: this.props.store.getIngredients(), word: this.props.store.getWord(), lastWord: this.props.store.getLastWord() })
+  }
+
+  toggleShowAddIngredientUI = () => {
+    this.setState({...this.state, showAddIngredient: !this.state.showAddIngredient});
+  }
+
+
+  handleChange(event) {
+    // const value = event.target && event.target.value;
+    console.log(event);
+    this.setState({...this.state, manualIngredient: event});
+    // console.log(this.state.manualIngredient)
   }
 
   renderContent = () => (
@@ -55,14 +69,38 @@ export default class IngredientsView extends React.Component {
                 </Text>
                 <TouchableOpacity
                   onPress={() => {
-                    this.sheetRef.current.snapTo(2);
-                    this.props.store.setStopPrediction(false);
+                    Keyboard.dismiss();
+                    this.sheetRef.current.snapTo(2);                    
                   }}
                 >
                   <AntDesign name="arrowdown" size={35} color="black" />
                 </TouchableOpacity>
               </View>
-              <ScrollView style={{flex:1}}>
+              { this.state.showAddIngredient ?
+                  <View style={styles.ingredientItem}>
+                  <TextInput
+                    style={[this.props.styles.text, { marginBottom: 10 , minWidth:100}]}
+                    onChangeText={this.handleChange}
+                    value={this.state.manualIngredient}
+                    autoFocus={true}
+                    placeholderTextColor={darkGrey}
+                    placeholder="Enter Ingredient ..."
+                  />
+                  <View style={{justifyContent:'flex-end', flexDirection:'row'} }>
+                    <TouchableOpacity onPress={()=> { this.props.store.addIngredient(this.state.manualIngredient); this.setState({...this.state, manualIngredient:"", showAddIngredient: false}); Keyboard.dismiss(); }}>
+                      <Entypo name="check" size={30} color="green"  style={{marginRight:10}}/>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={()=> { this.setState({...this.state, manualIngredient:"", showAddIngredient: false}); Keyboard.dismiss(); }}>
+                      <Entypo name="cross" size={30} color="red" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                : null
+                }
+              <ScrollView style={{flex:1}}
+                keyboardShouldPersistTaps={'never'}
+              >
+                
                 {this.state.ingredientList.map((ingredient) => (
                   <View style={styles.ingredientItem}>
                     <Text style={this.props.styles.text}>{ingredient}</Text>
@@ -75,14 +113,7 @@ export default class IngredientsView extends React.Component {
                   </TouchableOpacity>
                   </View>
                 ))}
-                <TextInput
-              style={this.props.styles.text}
-              // onChangeText={onChangeNumber}
-              // value={number}
-              placeholderTextColor={darkGrey}
-              placeholder="Enter Ingredient"
-
-            />
+                
               </ScrollView>
           </View>
           <View style={[this.props.styles.buttonContainer]}>
@@ -134,49 +165,21 @@ export default class IngredientsView extends React.Component {
             </Text>
           </View>
         ) : null}
-        <View style={{position: "absolute",top: windowHeight * 0.06,right: windowHeight * 0.04,}}>
             <TouchableOpacity
-                // onPress={() => {
-                //   this.props.store.removeIngredient(ingredient);
-                // }}
+                style={{position: "absolute",top: windowHeight * 0.06,right: windowHeight * 0.04, zIndex:20}}
+                onPress={() => {
+                  this.props.store.setStopPrediction(true);
+                  this.sheetRef.current.snapTo(0);
+                  this.toggleShowAddIngredientUI();
+                }}
               >
                 <Entypo name="add-to-list" size={30} color="white" />
             </TouchableOpacity>
-          </View>
-          {/* <View style={{padding:18,display:'flex', justifyContent:'space-between', position: "absolute",top: 30,left: windowWidth*0.05, zIndex:15, height:windowHeight* 0.4 , borderRadius:30, width: windowWidth*0.9, backgroundColor:'white'}}>
-            <Text style={[title, this.props.styles.modalTitle, {fontSize:25}]}>Manually Add Ingredient</Text>
-            <TextInput
-              style={{color:"black", fontWeight:'500', borderBottomWidth: 1, paddingBottom: 5, fontSize:18}}
-              // onChangeText={onChangeNumber}
-              // value={number}
-              placeholderTextColor={darkGrey}
-              placeholder="Enter Ingredient"
-
-            />
-            <SolidButton
-              color={green}
-              style={{ width: "100%" , marginBottom:0, marginTop:0,}}
-              labelStyle={{ color: 'white', fontSize: 16 }}
-              text="Add"
-            />
-          </View> */}
           
         <View style={[styles.container,]}>
           <View style={[styles.centerAll]}>
             <ImageBackground source={targetAreaPng} style={styles.image}>
               {this.state.word ? (
-                // <SolidButton
-                //   color={lightOverlay}
-                //   style={{ width: "100%" }}
-                //   labelStyle={{ color: darkGrey, fontSize: 16 }}
-                //   text={this.state.word}
-                // />
-              <TouchableOpacity
-                onPress={() => {
-                  this.props.store.setStopPrediction(true);
-                  this.sheetRef.current.snapTo(0);
-                }}
-              >
                 <View
                   useNativeDriver={true}
                   style={{
@@ -189,15 +192,13 @@ export default class IngredientsView extends React.Component {
                   <Text style={{ color: darkGrey, fontWeight: "500", fontSize: 16 }}>
                     {this.state.word}
                   </Text>
-                </View>
-              </TouchableOpacity>
+                </View>            
 
               ) : null}
             </ImageBackground>
           </View>
           <TouchableOpacity
             onPress={() => {
-              this.props.store.setStopPrediction(true);
               this.sheetRef.current.snapTo(0);
             }}
           >
@@ -222,6 +223,7 @@ export default class IngredientsView extends React.Component {
           snapPoints={[modalHeight, 0, 0]}
           borderRadius={35}
           initialSnap={2}
+          onOpenStart={() => this.props.store.setStopPrediction(true)}
           onCloseEnd={() => this.props.store.setStopPrediction(false)}
           renderContent={this.renderContent}
         />

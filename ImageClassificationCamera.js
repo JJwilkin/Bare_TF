@@ -84,7 +84,7 @@ class WordPrediction {
 
   addIngredient(val) {
     if (!this.ingredientList.includes(val)){
-      this.ingredientList.push(val);
+      this.ingredientList.unshift(val);
     }
   }
 
