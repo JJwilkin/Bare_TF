@@ -18,16 +18,16 @@ const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 export default function CameraOverlay(props) {
-  const { store, frameworkReady, handleViewRef } = props;
+  const { store, frameworkReady, isFocused, handleViewRef } = props;
 
   
   useEffect(()=>{
-    if (frameworkReady){
+    if (frameworkReady && isFocused){
       (async () => {
         subscribe();
       })();
     }
-  },[frameworkReady]);
+  },[frameworkReady, isFocused]);
 
   useEffect(()=>{
     return () => unsubscribe();

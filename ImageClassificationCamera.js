@@ -9,6 +9,7 @@ import { makeObservable, observable, action, computed } from "mobx"
 import CameraOverlay from './CameraOverlay';
 import * as Font from 'expo-font';
 import { Audio } from 'expo-av';
+import { useIsFocused } from '@react-navigation/native';
 //Components
 import * as SplashScreen from 'expo-splash-screen';
 
@@ -98,6 +99,7 @@ class WordPrediction {
 }
 
 export default function ImageClassificationCamera() {
+  const isFocused = useIsFocused();
   const cameraRef = useRef();
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const store = new WordPrediction();
@@ -142,7 +144,7 @@ export default function ImageClassificationCamera() {
 
   let requestAnimationFrameId = 0;
   useEffect(() => {
-    if(!frameworkReady) {
+    if(!frameworkReady ) {
       (async () => {
         
         //check permissions
@@ -170,6 +172,15 @@ export default function ImageClassificationCamera() {
       })();
     }
   }, []);
+
+  useEffect(()=> {
+    console.log(isFocused)
+    if (isFocused) {
+      store.setStopPrediction(false);
+    } else {
+      store.setStopPrediction(true);
+    }
+  }, [isFocused])
 
   useEffect(() => {
     (async () => {
@@ -220,7 +231,7 @@ export default function ImageClassificationCamera() {
                   resizeHeight={tensorDims.height}
                   resizeWidth={tensorDims.width}
                   resizeDepth={3}
-                  onReady={handleCameraStream}
+                  onReady={(imageAsTensors) => handleCameraStream(imageAsTensors)}
                   autorender={true}
                 />
                 
@@ -255,9 +266,14 @@ const handleCameraStream = (imageAsTensors) => {
         const nextImageTensor = await imageAsTensors.next().value;
         await getPrediction(nextImageTensor);
         requestAnimationFrameId = requestAnimationFrame(loop);
-        nextImageTensor.dispose();
+        if (!nextImageTensor) {
+          cancelAnimationFrame(requestAnimationFrameId);
+        } else {
+          nextImageTensor.dispose();
+        }
+        
       }
-    if(!predictionFound) loop();
+    if(isFocused && !predictionFound) loop();
   }
 
   if (hasPermission === null) {
@@ -272,7 +288,7 @@ const handleCameraStream = (imageAsTensors) => {
         { frameworkReady ? renderCameraView() : <Text styles={styles.title}>Loading</Text> }
       </View>  
       
-      <CameraOverlay store={store} styleSheet={styles} handleViewRef={handleViewRef} takePicture={takePicture} frameworkReady={frameworkReady}/>
+      <CameraOverlay store={store} styleSheet={styles} handleViewRef={handleViewRef} isFocused={isFocused} takePicture={takePicture} frameworkReady={frameworkReady}/>
     </View>
   );
 }
