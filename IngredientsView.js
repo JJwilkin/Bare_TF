@@ -48,6 +48,24 @@ export default class IngredientsView extends React.Component {
     this.setState({...this.state, manualIngredient: event});
     // console.log(this.state.manualIngredient)
   }
+  storeData = async (key, value) => {
+    try {
+      const jsonValue = JSON.stringify(value)
+      await AsyncStorage.setItem(key, jsonValue)
+    } catch (e) {
+      console.log(e)
+    }
+  };
+
+  getData = async (key) => {
+    try {
+      const jsonValue = await AsyncStorage.getItem(key)
+      console.log(JSON.parse(jsonValue))
+      return JSON.parse(jsonValue);
+    } catch(e) {
+      console.log(e)
+    }
+  }
 
   renderContent = () => (
     <View
@@ -123,7 +141,7 @@ export default class IngredientsView extends React.Component {
                  onPress={() => {
                    this.storeData(
                      "ingredientList",
-                     ingredientList
+                     this.props.store.getIngredients()
                    );
                  }}
                  labelStyle={{ color: "white", fontSize: 18 }}
@@ -131,28 +149,7 @@ export default class IngredientsView extends React.Component {
                />
              </View>
     </View>
-  );
-
-  storeData = async (key, value) => {
-    try {
-      const jsonValue = JSON.stringify(value)
-      console.log(jsonValue);
-      await AsyncStorage.setItem(key, jsonValue)
-    } catch (e) {
-      console.log(e)
-    }
-  };
-
-  getData = async (key) => {
-    try {
-      const jsonValue = await AsyncStorage.getItem(key)
-      console.log(JSON.parse(jsonValue))
-      return JSON.parse(jsonValue);
-    } catch(e) {
-      console.log(e)
-    }
-  }
-  
+  );  
 
   render() {
     return (

@@ -33,25 +33,6 @@ export default function CameraOverlay(props) {
     return () => unsubscribe();
   },[]);
 
-  const storeData = async (key, value) => {
-    try {
-      const jsonValue = JSON.stringify(value)
-      await AsyncStorage.setItem(key, jsonValue)
-    } catch (e) {
-      console.log(e)
-    }
-  };
-
-  const getData = async (key) => {
-    try {
-      const jsonValue = await AsyncStorage.getItem(key)
-      console.log(JSON.parse(jsonValue))
-      return JSON.parse(jsonValue);
-    } catch(e) {
-      console.log(e)
-    }
-  }
-
   const subscribe = () => {
     console.log("Subscribing")
   

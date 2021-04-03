@@ -16,7 +16,8 @@ import { view } from "../styles";
 
 const Tab = createMaterialBottomTabNavigator();
 
-export function TabNav() {
+export function TabNav(props) {
+  const {store, mobileNet} = props;
   return (
     <NavigationContainer>
       <Tab.Navigator
@@ -35,7 +36,8 @@ export function TabNav() {
       >
         <Tab.Screen
           name="Camera"
-          component={ImageClassificationCamera}
+          // component={ImageClassificationCamera}
+          children={()=> <ImageClassificationCamera store={store} mobileNet={mobileNet}/> }
           options={{
             tabBarLabel: "Camera",
             tabBarIcon: ({ color }) => (

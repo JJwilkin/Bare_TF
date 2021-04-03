@@ -5,7 +5,7 @@ import * as tf from '@tensorflow/tfjs';
 import {cameraWithTensors} from '@tensorflow/tfjs-react-native';
 import * as mobilenet from '@tensorflow-models/mobilenet';
 import * as knnClassifier from '@tensorflow-models/knn-classifier';
-import { makeObservable, observable, action, computed } from "mobx"
+
 import CameraOverlay from './CameraOverlay';
 import * as Font from 'expo-font';
 import { Audio } from 'expo-av';
@@ -26,85 +26,14 @@ const customModel = require('./model_3.json');
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-class WordPrediction {
-  word = ""
-  lastWord = ""
-  showPrediction = false
-  stopPredicting = false
-  shouldBounce = false
-  ingredientList = []
-  constructor() {
-      makeObservable(this, {
-          word: observable,
-          // getWord: computed,
-          getShowPrediction: computed,
-          prediction: action,
-          showPrediction:observable,
 
-      })
-  }
-  getWord () {
-    return this.word;
-  }
 
-  getLastWord () {
-    return this.lastWord;
-  }
-
-  getShouldBounce () {
-    return this.shouldBounce;
-  }
-  
-  get getShowPrediction () {
-    return this.showPrediction;
-  }
-
-  setWord(word) {
-      this.word = word;
-  }
-
-  setShouldBounce(val) {
-    this.shouldBounce = val;
-  }
-
-  setLast(lastWord) {
-    this.lastWord = lastWord;
-}
-
-  prediction(val) {
-    this.showPrediction = val;
-  }
-
-  setStopPrediction(val) {
-    this.stopPredicting = val;
-  }
-
-  getIngredients() {
-    return this.ingredientList;
-  }
-
-  addIngredient(val) {
-    if (!this.ingredientList.includes(val)){
-      this.ingredientList.unshift(val);
-    }
-  }
-
-  removeIngredient(val) {
-    const index = this.ingredientList.indexOf(val);
-    if (index > -1) {
-      this.ingredientList.splice(index, 1);
-    }
-  }
-  
-}
-
-export default function ImageClassificationCamera() {
+export default function ImageClassificationCamera(props) {
   const isFocused = useIsFocused();
   const cameraRef = useRef();
   const [fontsLoaded, setFontsLoaded] = useState(false);
-  const store = new WordPrediction();
+  const { store, mobileNet } = props;
   const [hasPermission, setHasPermission] = useState(null);
-  const [type, setType] = useState(Camera.Constants.Type.back);
   const TensorCamera = cameraWithTensors(Camera);
   //Tensorflow and Permissions
   const [mobilenetModel, setMobilenetModel] = useState(null);
@@ -153,10 +82,11 @@ export default function ImageClassificationCamera() {
         setHasPermission(status === 'granted');
 
         //we must always wait for the Tensorflow API to be ready before any TF operation...
-        await tf.ready();
+        // await tf.ready();
 
         //load the mobilenet model and save it in state
-        setMobilenetModel(await loadMobileNetModel());
+        // setMobilenetModel(await loadMobileNetModel());
+        setMobilenetModel(mobileNet);
         let classifier = knnClassifier.create();
         await load(classifier);
         // let existingJson = await (await fetch('./model.json')).json()
@@ -284,11 +214,16 @@ const handleCameraStream = (imageAsTensors) => {
   }
   return (
     <View style={styles.container}>
+      
+      {mobileNet ? <>
       <View style={styles.body}>
         { frameworkReady ? renderCameraView() : <Text styles={styles.title}>Loading</Text> }
       </View>  
       
       <CameraOverlay store={store} styleSheet={styles} handleViewRef={handleViewRef} isFocused={isFocused} takePicture={takePicture} frameworkReady={frameworkReady}/>
+      </>
+      :
+      <Text>Loading</Text>}
     </View>
   );
 }

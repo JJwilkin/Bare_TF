@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import * as Font from 'expo-font';
-
+import * as tf from '@tensorflow/tfjs';
+import * as mobilenet from '@tensorflow-models/mobilenet';
 //Components
+import GlobalState from './GlobalState';
 import { TabNav } from './components/nav'
 import * as SplashScreen from 'expo-splash-screen';
 
@@ -15,21 +17,24 @@ const loadFonts = () => Font.loadAsync({
   'SF-Thin': require('./assets/fonts/SF-Thin.otf')
 })
 
+
+
 export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
-
+  const [mobileNet, setMobileNet] = useState();
+  const store = new GlobalState();
   useEffect(() => {
     async function prepare() {
       try {
         await SplashScreen.preventAutoHideAsync();
         await loadFonts();
+       
       } catch (e) {
         console.warn(e);
       } finally {
         setAppIsReady(true);
       }
     }
-
     prepare();
   }, []);
 
@@ -45,11 +50,22 @@ export default function App() {
     check()
   }, [appIsReady]);
 
-  if (!appIsReady) {
-    return null;
-  }
+  useEffect(()=> {
+    async function loadMobileNet () {
+      await tf.ready();
+      setMobileNet(await mobilenet.load());
+    }
+    loadMobileNet();
+  },[])
 
+  if (!appIsReady ) {
+    return null;
+  } else if (mobileNet) {
+    return (
+      <TabNav store={store} mobileNet={mobileNet} />
+    );
+  }
   return (
-    <TabNav></TabNav>
+    <TabNav store={store}></TabNav>
   ); 
 }
