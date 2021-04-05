@@ -5,8 +5,10 @@ import * as tf from '@tensorflow/tfjs';
 import {cameraWithTensors} from '@tensorflow/tfjs-react-native';
 import * as mobilenet from '@tensorflow-models/mobilenet';
 import * as knnClassifier from '@tensorflow-models/knn-classifier';
+import LottieView from "lottie-react-native";
 
 import CameraOverlay from './CameraOverlay';
+import { global, view, title, subtitle, chip, padding, grey, darkGrey, green, spaceBetweenView } from "./styles";
 import * as Font from 'expo-font';
 import { Audio } from 'expo-av';
 import { useIsFocused } from '@react-navigation/native';
@@ -40,6 +42,7 @@ export default function ImageClassificationCamera(props) {
   const [classifier, setClassifier] = useState();
   const [frameworkReady, setFrameworkReady] = useState(false);
   const [predictionFound, setPredictionFound] = useState(false);
+  const [loadingText, setLoadingText] = useState("Prepping the Kitchen")
   const [sound, setSound] = useState();
 
   const handleViewRef = useRef();
@@ -72,6 +75,25 @@ export default function ImageClassificationCamera(props) {
 }
 
   let requestAnimationFrameId = 0;
+  useEffect(()=> {
+    function changePrompt(prompt){
+      return new Promise(function(resolve, reject) {
+        setTimeout(() => {
+          setLoadingText(prompt)
+          resolve();
+        }, 1750);
+     });
+    }
+     async function callChangePrompts () {
+       await changePrompt ("Prepping the Kitchen");
+       await changePrompt ("Warming the Oven");
+       await changePrompt ("Ready for awesome!");
+
+     }
+
+     callChangePrompts();
+  
+  },[])
   useEffect(() => {
     if(!frameworkReady) {
       (async () => {
@@ -223,7 +245,18 @@ const handleCameraStream = (imageAsTensors) => {
       <CameraOverlay store={store} navigation={navigation} styleSheet={styles} handleViewRef={handleViewRef} isFocused={isFocused} takePicture={takePicture} frameworkReady={frameworkReady}/>
       </>
       :
-      <Text>Loading</Text>}
+      <View style={styles.viewCenter}>
+        <LottieView
+          style={{ width: windowWidth * 0.75, height: windowWidth * 0.75 }}
+          resizeMode="cover"
+          source={require("./components/loading2.json")}
+          autoPlay
+          loop
+        />
+        <Text style={[subtitle, { marginVertical: 40 }]}>
+          {loadingText}
+        </Text>
+      </View>}
     </View>
   );
 }
@@ -234,6 +267,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     // paddingTop: 30,
     backgroundColor: '#E8E8E8',
+  },
+  viewCenter: {
+    ...view,
+    justifyContent: "center",
+    alignItems: "center",
   },
   title: {
     // margin: 10,

@@ -21,8 +21,10 @@ const loadFonts = () => Font.loadAsync({
 
 export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
-  const [mobileNet, setMobileNet] = useState();
+  const [mobileNet, setMobileNet] = useState(null);
   const store = new GlobalState();
+
+ 
 
   useEffect(() => {
     async function loadMobileNet () {
@@ -30,14 +32,13 @@ export default function App() {
       setMobileNet(await mobilenet.load());
       console.log('mobilenet loaded')
     }
-    loadMobileNet();
-  },[])
-
-  useEffect(() => {
+    
     async function prepare() {
       try {
+        loadMobileNet();
         await SplashScreen.preventAutoHideAsync();
         await loadFonts();
+        
        
       } catch (e) {
         console.warn(e);
@@ -60,9 +61,18 @@ export default function App() {
     check()
   }, [appIsReady]);
 
+  // useEffect(() => {
+  //   async function loadMobileNet () {
+  //     await tf.ready();
+  //     setMobileNet(await mobilenet.load());
+  //     console.log('mobilenet loaded')
+  //   }
+  //   loadMobileNet();
+  // },[])
+
   
 
-  if (!appIsReady ) {
+  if (!appIsReady) {
     return null;
   } 
   return (

@@ -58,7 +58,7 @@ export default class GlobalState {
     }
   
     addIngredient(val) {
-      if (!this.ingredientList.includes(val)){
+      if (val && !this.ingredientList.includes(val)){
         const lowerCaseVal = val.toLowerCase();
         this.ingredientList.unshift(lowerCaseVal);
       }
