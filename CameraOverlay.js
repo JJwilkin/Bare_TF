@@ -8,8 +8,6 @@ import {
   Dimensions
 } from "react-native";
 import { DeviceMotion } from 'expo-sensors';
-import { AntDesign, Ionicons } from '@expo/vector-icons';
-import SolidButton from './components/buttons/solidButton';
 import {title, darkGrey, white, lightOverlay, green, lightGrey } from "./styles";
 import AsyncStorage from '@react-native-community/async-storage';
 const targetAreaPng = require("./assets/targetArea.png");
@@ -18,7 +16,7 @@ const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 export default function CameraOverlay(props) {
-  const { store, frameworkReady, isFocused, handleViewRef } = props;
+  const { store, frameworkReady, isFocused, handleViewRef, navigation } = props;
 
   
   useEffect(()=>{
@@ -34,8 +32,6 @@ export default function CameraOverlay(props) {
   },[]);
 
   const subscribe = () => {
-    console.log("Subscribing")
-  
     DeviceMotion.setUpdateInterval(1000)
     DeviceMotion.addListener(motionData => {
       const {x, y, z} = motionData.acceleration;
@@ -52,11 +48,9 @@ export default function CameraOverlay(props) {
     DeviceMotion.removeAllListeners();
   }
 
-  
-
   return (
     <View style={styles.container}>
-      <IngredientsView store={store} handleViewRef={handleViewRef} styles={styles}  />
+      <IngredientsView store={store} navigation={navigation} handleViewRef={handleViewRef} styles={styles}  />
     </View>
   );
 }

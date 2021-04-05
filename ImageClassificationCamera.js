@@ -32,7 +32,7 @@ export default function ImageClassificationCamera(props) {
   const isFocused = useIsFocused();
   const cameraRef = useRef();
   const [fontsLoaded, setFontsLoaded] = useState(false);
-  const { store, mobileNet } = props;
+  const { store, mobileNet, navigation } = props;
   const [hasPermission, setHasPermission] = useState(null);
   const TensorCamera = cameraWithTensors(Camera);
   //Tensorflow and Permissions
@@ -43,17 +43,17 @@ export default function ImageClassificationCamera(props) {
   const [sound, setSound] = useState();
 
   const handleViewRef = useRef();
-  const bounce = () => handleViewRef.current.bounce(1750).then(endState => console.log(endState.finished ? 'bounce finished' : 'bounce cancelled'));
+  const bounce = () => handleViewRef.current.bounce(1750)
   const textureDims = Platform.OS === "ios"? { width: 1080, height: 1920 } : { width: 1600, height: 1200 };
   const tensorDims = { width: 152, height: 200 }; 
 
   SplashScreen.preventAutoHideAsync() // TO DO: HANDLE THEN AND CATCH
-  .then(result => console.log(`SplashScreen.preventAutoHideAsync() succeeded: ${result}`))
+  .then()
   .catch(console.warn);
 
   const takePicture = async () => {
     cameraRef.current.camera.takePictureAsync().then(result => {
-      console.log('picture taken')
+      
     });
   };
 
@@ -73,12 +73,11 @@ export default function ImageClassificationCamera(props) {
 
   let requestAnimationFrameId = 0;
   useEffect(() => {
-    if(!frameworkReady ) {
+    if(!frameworkReady) {
       (async () => {
         
         //check permissions
         const { status } = await Camera.requestPermissionsAsync();
-        console.log(`permissions status: ${status}`);
         setHasPermission(status === 'granted');
 
         //we must always wait for the Tensorflow API to be ready before any TF operation...
@@ -86,7 +85,6 @@ export default function ImageClassificationCamera(props) {
 
         //load the mobilenet model and save it in state
         // setMobilenetModel(await loadMobileNetModel());
-        setMobilenetModel(mobileNet);
         let classifier = knnClassifier.create();
         await load(classifier);
         // let existingJson = await (await fetch('./model.json')).json()
@@ -103,8 +101,11 @@ export default function ImageClassificationCamera(props) {
     }
   }, []);
 
+  useEffect(()=>{
+    setMobilenetModel(mobileNet);
+  },[mobileNet])
+
   useEffect(()=> {
-    console.log(isFocused)
     if (isFocused) {
       store.setStopPrediction(false);
     } else {
@@ -139,7 +140,6 @@ export default function ImageClassificationCamera(props) {
   }, [requestAnimationFrameId]);
 
   const playSound = async () => {
-    console.log('playing')
     sound.setPositionAsync(0);
     await sound.playAsync(); 
   }
@@ -215,12 +215,12 @@ const handleCameraStream = (imageAsTensors) => {
   return (
     <View style={styles.container}>
       
-      {mobileNet ? <>
+      {mobileNet && isFocused ? <>
       <View style={styles.body}>
         { frameworkReady ? renderCameraView() : <Text styles={styles.title}>Loading</Text> }
       </View>  
       
-      <CameraOverlay store={store} styleSheet={styles} handleViewRef={handleViewRef} isFocused={isFocused} takePicture={takePicture} frameworkReady={frameworkReady}/>
+      <CameraOverlay store={store} navigation={navigation} styleSheet={styles} handleViewRef={handleViewRef} isFocused={isFocused} takePicture={takePicture} frameworkReady={frameworkReady}/>
       </>
       :
       <Text>Loading</Text>}

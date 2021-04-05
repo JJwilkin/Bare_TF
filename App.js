@@ -23,6 +23,16 @@ export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
   const [mobileNet, setMobileNet] = useState();
   const store = new GlobalState();
+
+  useEffect(() => {
+    async function loadMobileNet () {
+      await tf.ready();
+      setMobileNet(await mobilenet.load());
+      console.log('mobilenet loaded')
+    }
+    loadMobileNet();
+  },[])
+
   useEffect(() => {
     async function prepare() {
       try {
@@ -50,22 +60,12 @@ export default function App() {
     check()
   }, [appIsReady]);
 
-  useEffect(()=> {
-    async function loadMobileNet () {
-      await tf.ready();
-      setMobileNet(await mobilenet.load());
-    }
-    loadMobileNet();
-  },[])
+  
 
   if (!appIsReady ) {
     return null;
-  } else if (mobileNet) {
-    return (
-      <TabNav store={store} mobileNet={mobileNet} />
-    );
-  }
+  } 
   return (
-    <TabNav store={store}></TabNav>
+    <TabNav store={store} mobileNet={mobileNet}></TabNav>
   ); 
 }

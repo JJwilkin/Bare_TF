@@ -37,7 +37,7 @@ export function TabNav(props) {
         <Tab.Screen
           name="Camera"
           // component={ImageClassificationCamera}
-          children={()=> <ImageClassificationCamera store={store} mobileNet={mobileNet}/> }
+          children={({navigation})=> <ImageClassificationCamera navigation={navigation} store={store} mobileNet={mobileNet}/> }
           options={{
             tabBarLabel: "Camera",
             tabBarIcon: ({ color }) => (

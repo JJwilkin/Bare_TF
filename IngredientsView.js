@@ -43,11 +43,9 @@ export default class IngredientsView extends React.Component {
 
 
   handleChange(event) {
-    // const value = event.target && event.target.value;
-    console.log(event);
     this.setState({...this.state, manualIngredient: event});
-    // console.log(this.state.manualIngredient)
   }
+
   storeData = async (key, value) => {
     try {
       const jsonValue = JSON.stringify(value)
@@ -60,7 +58,6 @@ export default class IngredientsView extends React.Component {
   getData = async (key) => {
     try {
       const jsonValue = await AsyncStorage.getItem(key)
-      console.log(JSON.parse(jsonValue))
       return JSON.parse(jsonValue);
     } catch(e) {
       console.log(e)
@@ -101,6 +98,7 @@ export default class IngredientsView extends React.Component {
                     onChangeText={this.handleChange}
                     value={this.state.manualIngredient}
                     autoFocus={true}
+                    autoCapitalize={false}
                     placeholderTextColor={darkGrey}
                     placeholder="Enter Ingredient ..."
                   />
@@ -139,10 +137,18 @@ export default class IngredientsView extends React.Component {
                 color={green}
                  style={{ width: "100%" }}
                  onPress={() => {
-                   this.storeData(
-                     "ingredientList",
-                     this.props.store.getIngredients()
-                   );
+                   this.props.navigation.navigate('Home', {
+                    screen: 'Home',
+                    params: {
+                      screen: 'Recipes',
+                      params: {
+                        screen: 'Recipes',
+                        params: {
+                          foodItems: this.props.store.getIngredients(),
+                        },
+                      },
+                    },
+                  });
                  }}
                  labelStyle={{ color: "white", fontSize: 18 }}
                  text={`Find Recipes`}

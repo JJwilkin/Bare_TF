@@ -3,7 +3,7 @@ import { StyleSheet, View, FlatList, Dimensions, TouchableWithoutFeedback, Image
 import { Provider as PaperProvider, Text, ActivityIndicator } from "react-native-paper";
 import { createStackNavigator, TransitionPresets } from "@react-navigation/stack";
 import LottieView from "lottie-react-native";
-
+import { useIsFocused } from '@react-navigation/native'
 import oneRecipe from "./oneRecipe.js";
 import SolidButton from "./buttons/solidButton.js";
 import EmptyPage from "./empty.js";
@@ -45,12 +45,15 @@ export default function RecipesTab() {
 }
 
 function Recipes({ route, navigation }) {
+  const isFocused = useIsFocused()
   const [isLoading, setLoading] = useState(true);
   const [recipes, setRecipes] = useState([]);
   const [isError, setError] = useState(false);
   const [foodItems, setFoodItems] = useState([]);
+  
   let success = false;
   useEffect(() => {
+    
     if (foodItems.length === 0) {
       setLoading(true);
     }
