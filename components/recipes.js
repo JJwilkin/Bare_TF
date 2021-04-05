@@ -1,54 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, View, FlatList, Dimensions, TouchableWithoutFeedback } from "react-native";
 import { Provider as PaperProvider } from "react-native-paper";
-import { createStackNavigator, TransitionPresets } from "@react-navigation/stack";
+import { useIsFocused } from "@react-navigation/native"; // TEMP
+import AsyncStorage from '@react-native-community/async-storage';
 
-import oneRecipe from "./oneRecipe.js";
 import SolidButton from "./buttons/solidButton.js";
 import EmptyPage from "./empty.js";
 import CardTextComponent from "./cardTextComponent.js";
 
 import { apiKeys } from "../config/constants";
-import { global, view, title, subtitle, overlay, flexView, grey, darkGrey, mainContainer, lightGrey } from "../styles";
-import { useIsFocused } from "@react-navigation/native"; // TEMP
+import { global, view, title, subtitle, overlay, flexView, grey, darkGrey, mainContainer, lightGrey, red, white } from "../styles";
 
-const windowWidth = Dimensions.get("window").width;
 
-const Stack = createStackNavigator();
-export default function RecipesTab() {
-  return (
-    <Stack.Navigator
-      mode="card"
-      initialRouteName="Recipes"
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <Stack.Screen
-        name="Recipes"
-        component={Recipes}
-        options={{
-          gestureDirection: "horizontal",
-          ...TransitionPresets.SlideFromRightIOS,
-        }}
-      />
-      <Stack.Screen
-        name="oneRecipe"
-        component={oneRecipe}
-        options={{
-          gestureDirection: "horizontal",
-          ...TransitionPresets.SlideFromRightIOS,
-        }}
-      />
-    </Stack.Navigator>
-  );
-}
-
-function Recipes({ route, navigation }) {
+export default function RecipesTab({ route, navigation }) {
   const [isLoading, setLoading] = useState(true);
   const [recipes, setRecipes] = useState([]);
   const [isError, setError] = useState(false);
   const [foodItems, setFoodItems] = useState(["apple", "banana", "flour"]);
+  const [isFav, setIsFav] = useState(false)
 
   const base = "https://api.spoonacular.com/recipes/findByIngredients";
   let index = 0;
@@ -100,7 +69,7 @@ function Recipes({ route, navigation }) {
   const isFocused = useIsFocused()
   useEffect(() => {
     getRecipes(base + "?ingredients=" + foodItems.join(", ") + "&apiKey=")
-  }, [isFocused])
+  }, [isFocused]) // TO DO: REMOVE AFTER
   
   if (foodItems.length === 0) {
     return (
@@ -162,14 +131,14 @@ function Recipes({ route, navigation }) {
 
   function _renderItem({ item }, navigation) {
     return (
-      <TouchableWithoutFeedback onPress={() => console.log(navigation.navigate("oneRecipe", {item: item})) }>
-      {/* // navigation.navigate("oneRecipe", { item: item }) */}
+      <TouchableWithoutFeedback onPress={() => navigation.navigate("oneRecipe", {item: item})}>
         <View style={styles.recipesItem}>
           <CardTextComponent
             imageUri={item.image}
             title={item.title}
             subtitle={`Your Ingredients: ${item.usedIngredientCount}`}
             showFavs={true}
+            recipe={item}
           />
         </View>
       </TouchableWithoutFeedback>

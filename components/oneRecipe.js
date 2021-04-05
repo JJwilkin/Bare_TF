@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
-import {StyleSheet, ScrollView, View, ImageBackground, BackHandler, Dimensions, FlatList, Linking, AsyncStorage, Image} from "react-native";
-import {Provider as PaperProvider, Text, IconButton, Snackbar} from "react-native-paper";
+import { StyleSheet, ScrollView, View, ImageBackground, BackHandler, Dimensions, FlatList, Linking } from "react-native";
+import { Provider as PaperProvider, Text, IconButton, Snackbar } from "react-native-paper";
+import AsyncStorage from '@react-native-community/async-storage';
+
 import { apiKeys } from "../config/constants";
-import { global, view, subtitle, chip, padding, grey, darkGrey, green, spaceBetweenView, elevation, overlay, mainContainer, borderRadius, medGrey, yellow, purple, blue, text } from "../styles";
+import { global, view, subtitle, chip, padding, grey, darkGrey, green, spaceBetweenView, elevation, overlay, mainContainer, borderRadius, yellow, purple, blue, text, red } from "../styles";
 
 export default function oneRecipe({ route, navigation }) {
   const [isLoading, setLoading] = useState(true);
@@ -11,79 +13,29 @@ export default function oneRecipe({ route, navigation }) {
   const [visible, setVisible] = useState(false);
   const [snackBarText, setSnackBarText] = useState("Added to Favourites");
   const [recipe, setRecipe] = useState([]);
-  const [favs, setFavs] = useState([]);
+  const [addedToFavs, setAddedToFavs] = useState(false)
 
   const base = "https://api.spoonacular.com/recipes/";
   const { item } = route.params;
-  let fromSavedPage = route.params.fromSavedPage;
+
+  const removedFromFavsText = "Removed recipe from saved"
+  const addedToFavsText = "Saved recipe"
+  const errorText = "Oh No! Something went wrong."
 
   let index = 0;
   let success = false;
 
   const url = base + item.id + "/information" + "?apiKey=";
 
-  // useEffect(() => {
-  //   setTimeout(function () {
-  //     if (visible) {
-  //       setVisible(false);
-  //     }
-  //   }, 1500);
-  // }, [visible]);
-
   useEffect(() => {
-    // getFavs();
     getRecipes();
+    setIsFavIcon();
 
     BackHandler.addEventListener("hardwareBackPress", () => {
       navigation.goBack();
       return true;
     });
-  }, []); // add route.params.item
-
-  // async function getFavs() {
-  //   try {
-  //     const value = await AsyncStorage.getItem("favRecipes");
-  //     const parsedValue = JSON.parse(value);
-  //     if (parsedValue && parsedValue !== null) {
-  //       await setFavs(parsedValue);
-  //     }
-  //   } catch (e) {
-  //     Promise.reject(e);
-  //     fromSavedPage = true;
-  //   }
-  // }
-
-  async function saveRecipe(recipe) {
-    const value = await AsyncStorage.getItem("favRecipes");
-    let currentFavs = JSON.parse(value);
-    let added = false;
-
-    if (!currentFavs || currentFavs === null) {
-      currentFavs = [];
-    }
-
-    currentFavs.forEach((fav) => {
-      if (fav.title == recipe.title && currentFavs.length != 0) {
-        added = true;
-      }
-    });
-
-    if (!added) {
-      currentFavs.push(recipe);
-    } else {
-      setSnackBarText("This recipe is already a favourite!");
-    }
-
-    try {
-      await AsyncStorage.setItem("favRecipes", JSON.stringify(currentFavs));
-      setVisible(true);
-    } catch (e) {
-      Promise.reject(e);
-      setSnackBarText("Oh no! Something went wrong.");
-      setVisible(true);
-    }
-    await getFavs();
-  }
+  }, []);
 
   const getRecipes = () => {
     if (doneCheckingKeys) return;
@@ -116,6 +68,49 @@ export default function oneRecipe({ route, navigation }) {
         }
       });
   };
+
+  const setIsFavIcon = async () => {
+    const value = await AsyncStorage.getItem(item.title.toString());
+    setAddedToFavs(!!value);
+  }
+
+  function displaySnackbar (text) {
+    setVisible(true)
+    setSnackBarText(text);
+  }
+
+  useEffect(() => {
+    setTimeout(function () {
+      if (visible) {
+        setVisible(false);
+      }
+    }, 1500);
+  }, [visible]);
+
+  async function addToFavs() {
+    const prevAddedToFavs = addedToFavs
+    const recipeTitle = item.title.toString()
+
+    const value = await AsyncStorage.getItem(recipeTitle);
+
+    if (!prevAddedToFavs && (!value || value == null)) {
+      try {
+        await AsyncStorage.setItem(recipeTitle, JSON.stringify(item))
+        displaySnackbar(addedToFavsText)
+      } catch {
+        displaySnackbar(errorText)
+      }
+    } else if (prevAddedToFavs && value) {
+      try {
+        await AsyncStorage.removeItem(recipeTitle)
+        displaySnackbar(removedFromFavsText)
+      } catch {
+        displaySnackbar(errorText)
+      }
+    }
+
+    setIsFavIcon();
+  }
 
   if (isLoading) {
     return (
@@ -161,9 +156,10 @@ export default function oneRecipe({ route, navigation }) {
                       {recipe.title}
                       </Text>
                       <IconButton
-                        onPress={() => console.log(recipe)}
+                        id="favIcon"
+                        onPress={() => addToFavs()}
                         icon="heart"
-                        color="white"
+                        color={addedToFavs ? red : "white"}
                         size={30}
                         style={styles.backIcon}
                       />

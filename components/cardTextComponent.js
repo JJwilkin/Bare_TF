@@ -1,7 +1,8 @@
-import React, { useRef, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StyleSheet, View, Dimensions, ImageBackground, Text } from "react-native";
 import { IconButton} from "react-native-paper";
-import { subtitle, text, white, black, darkGrey, elevation, borderRadius, overlay } from "../styles";
+import AsyncStorage from "@react-native-community/async-storage"
+import { subtitle, text, white, black, darkGrey, elevation, borderRadius, overlay, red } from "../styles";
 
 const windowWidth = "100%";
 const windowHeight = Dimensions.get("window").height * 0.5;
@@ -10,18 +11,83 @@ let cardWidth = windowWidth;
 let cardHeight = windowHeight;
 
 export default function CardTextComponent(props) {
-  const favIcon = useRef(null)
-  const [clicked, setClicked] = useState(false)
+  const [clicked, setClicked] = useState(false);
+  const [addedToFavs, setAddedToFavs] = useState(false);
+  const item = props.recipe;
+
+  let index = 0;
+  let success = false;
+  // const url = "https://api.spoonacular.com/recipes/" + itemId + "/information" + "?apiKey=";
 
   cardWidth = props.width ? props.width : windowWidth;
   cardHeight = props.height ? props.height : windowHeight;
 
-  const addToFavs = () => {
-    setClicked(!clicked)
+  useEffect(() => {
+    async function checkIsFav(title) {
+      await AsyncStorage.getItem(title)
+      .then((response) => {
+        if (response) {
+          setAddedToFavs(true)
+        } 
+      })
+    }
+
+    checkIsFav(props.title)
+  }, [])
+
+  async function addToFavs() {
+    const prevAddedToFavs = addedToFavs
+    const recipeTitle = props.title.toString()
+
+    const value = await AsyncStorage.getItem(recipeTitle);
+
+    if (!prevAddedToFavs && (!value || value == null)) {
+      try {
+        // const recipe = await getRecipe();
+        await AsyncStorage.setItem(recipeTitle, JSON.stringify(item))
+        setAddedToFavs(!addedToFavs);
+      } catch {
+        console.log("error")
+      }
+    } else if (prevAddedToFavs && value) {
+      try {
+        await AsyncStorage.removeItem(recipeTitle)
+        setAddedToFavs(!addedToFavs);
+      } catch {
+        console.log("error")
+      }
+    }
   }
 
-  return (
+  const getRecipe = () => {
+    if (doneCheckingKeys) return;
+    fetch(url + apiKeys[index])
+      .then(async (response) => {
+        if (response.ok) {
+          const json = await response.json();
+          success = true;
+          console.log("error")// TO DO : ERROR HANDLING
+          return json;
+        } else {
+          index++;
 
+          if (!index < apiKeys.length) {
+            console.log("error") // TO DO : ERROR HANDLING
+          }
+        }
+      })
+      .finally(() => {
+        if (success) {
+          console.log("done"); // TO DO: ??
+        } else {
+          if (index < apiKeys.length) {
+            getRecipe();
+          }
+        }
+      });
+  };
+
+  return (
     <View style={styles.cardContainer}>
       <ImageBackground
         style={styles.imageBackground}
@@ -34,10 +100,9 @@ export default function CardTextComponent(props) {
             <IconButton
               onPress={() => addToFavs()}
               icon="heart"
-              color={clicked ? "red" : "white"}
+              color={addedToFavs ? red : white}
               size={30}
               style={styles.favIcon}
-              ref={favIcon}
             />
           ) : null }
           <View style={styles.overlay}>

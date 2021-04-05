@@ -22,7 +22,7 @@ export default function CardComponent(props) {
           <View style={styles.overlay} />
           { props.emptyPageCard ? props.emptyPageCard : 
           <View>
-            <Text style={styles.title}>{props.title}</Text>
+            <Text style={[styles.title, {fontSize: props.titleSize ? props.titleSize : 30}]}>{props.title}</Text>
             <Text style={styles.subtitle}>{props.subtitle}</Text>
           </View>
           }
@@ -41,6 +41,7 @@ const styles = StyleSheet.create({
     padding: 20,
     justifyContent: "flex-end",
     elevation: elevation,
+    marginVertical: 5
   },
   overlay: {
     borderRadius: borderRadius,
@@ -54,7 +55,6 @@ const styles = StyleSheet.create({
   title: {
     ...subtitle,
     color: white,
-    fontSize: 30
   },
   subtitle: {
     ...text,

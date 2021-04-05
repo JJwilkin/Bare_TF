@@ -8,6 +8,7 @@ import { createMaterialBottomTabNavigator } from "@react-navigation/material-bot
 
 //Components
 import ImageClassificationCamera from "../ImageClassificationCamera";
+import OCRCamera from "./OCRCamera";
 import Home from "./home";
 import RecipesTab from "./recipes";
 import SavedTab from "./savedRecipes";

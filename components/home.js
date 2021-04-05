@@ -2,9 +2,10 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native"; 
 
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
-import { createStackNavigator } from "@react-navigation/stack"
+import { createStackNavigator, TransitionPresets } from "@react-navigation/stack"
 
 import Recipes from "./recipes";
+import oneRecipe from "./oneRecipe";
 
 import { medGrey, lightGrey, title, mainContainer, padding } from "../styles";
 
@@ -19,7 +20,16 @@ export default function Home() {
         component={HomeWrapper}
         options={{ headerShown: false}}
       />
-    </Stack.Navigator> 
+      <Stack.Screen
+        name="oneRecipe"
+        component={oneRecipe}
+        options={{
+          gestureDirection: "horizontal",
+          headerShown: false,
+          ...TransitionPresets.SlideFromRightIOS,
+        }}
+      />
+    </Stack.Navigator>  
   )
 }
 
