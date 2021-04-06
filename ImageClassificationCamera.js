@@ -42,7 +42,7 @@ export default function ImageClassificationCamera(props) {
   const [classifier, setClassifier] = useState();
   const [frameworkReady, setFrameworkReady] = useState(false);
   const [predictionFound, setPredictionFound] = useState(false);
-  const [loadingText, setLoadingText] = useState("Prepping the Kitchen")
+  const [loadingText, setLoadingText] = useState("Prepping the Kitchen ...")
   const [sound, setSound] = useState();
 
   const handleViewRef = useRef();
@@ -75,25 +75,7 @@ export default function ImageClassificationCamera(props) {
 }
 
   let requestAnimationFrameId = 0;
-  useEffect(()=> {
-    function changePrompt(prompt){
-      return new Promise(function(resolve, reject) {
-        setTimeout(() => {
-          setLoadingText(prompt)
-          resolve();
-        }, 1750);
-     });
-    }
-     async function callChangePrompts () {
-       await changePrompt ("Prepping the Kitchen");
-       await changePrompt ("Warming the Oven");
-       await changePrompt ("Ready for awesome!");
 
-     }
-
-     callChangePrompts();
-  
-  },[])
   useEffect(() => {
     if(!frameworkReady) {
       (async () => {
