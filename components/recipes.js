@@ -1,103 +1,68 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, FlatList, Dimensions, TouchableWithoutFeedback, Image, ImageBackground } from "react-native";
-import { Provider as PaperProvider, Text, ActivityIndicator } from "react-native-paper";
-import { createStackNavigator, TransitionPresets } from "@react-navigation/stack";
-import LottieView from "lottie-react-native";
-import { useIsFocused } from '@react-navigation/native'
-import oneRecipe from "./oneRecipe.js";
-import SolidButton from "./buttons/solidButton.js";
+import { StyleSheet, View, FlatList, Dimensions, TouchableWithoutFeedback } from "react-native";
+import { Provider as PaperProvider } from "react-native-paper";
+import { useIsFocused } from "@react-navigation/native"; // TEMP
+import AsyncStorage from '@react-native-community/async-storage';
+
 import EmptyPage from "./empty.js";
-import CardComponent from "./cardComponent.js"
+import CardTextComponent from "./cardTextComponent.js";
 
 import { apiKeys } from "../config/constants";
-import { global, view, title, subtitle, overlay, flexView, green, grey, darkGrey, mainContainer } from "../styles";
+import { global, view, title, subtitle, overlay, flexView, grey, darkGrey, mainContainer, lightGrey, red, white } from "../styles";
 
-const windowWidth = Dimensions.get("window").width;
 
-const Stack = createStackNavigator();
-export default function RecipesTab() {
-  return (
-    <Stack.Navigator
-      mode="card"
-      initialRouteName="Recipes"
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <Stack.Screen
-        name="Recipes"
-        component={Recipes}
-        options={{
-          gestureDirection: "horizontal",
-          ...TransitionPresets.SlideFromRightIOS,
-        }}
-      />
-      <Stack.Screen
-        name="oneRecipe"
-        component={oneRecipe}
-        options={{
-          gestureDirection: "horizontal",
-          ...TransitionPresets.SlideFromRightIOS,
-        }}
-      />
-    </Stack.Navigator>
-  );
-}
-
-function Recipes({ route, navigation }) {
-  const isFocused = useIsFocused()
+export default function RecipesTab({ route, navigation }) {
   const [isLoading, setLoading] = useState(true);
   const [recipes, setRecipes] = useState([]);
   const [isError, setError] = useState(false);
   const [foodItems, setFoodItems] = useState([]);
-  
+
+  const base = "https://api.spoonacular.com/recipes/findByIngredients";
+  let index = 0;
   let success = false;
+
+  storeData = async (key, value) => {
+    try {
+      const jsonValue = JSON.stringify(value)
+      await AsyncStorage.setItem(key, jsonValue)
+    } catch (e) {
+      console.log(e)
+    }
+  };
+
   useEffect(() => {
     
     if (foodItems.length === 0) {
       setLoading(true);
     }
     if (route.params && route.params.foodItems) {
-      
-      console.log('loading recipes')
+      storeData("foodItems", route.params.foodItems);
       setFoodItems(route.params.foodItems);
       let currentFoodItems = route.params.foodItems;
 
       setLoading(true);
-      let baseUrl =
-        base + "?ingredients=" + currentFoodItems.join(", ") + "&apiKey=";
-        console.log(baseUrl)
+      let baseUrl = base + "?ingredients=" + currentFoodItems.join(", ") + "&apiKey=";
       getRecipes(baseUrl);
     }
   }, [route.params]);
 
-
-  const base = "https://api.spoonacular.com/recipes/findByIngredients";
-
-  let index = 0;
-
   const getRecipes = (url) => {
     fetch(url + apiKeys[index])
       .then(async (response) => {
-        console.log('going to log')
         if (response.ok) {
-          console.log('this is okay')
           const json = await response.json();
           success = true;
           setRecipes(json);
           setError(false);
         } else {
-          console.log('this doesnt work')
           index++;
 
           if (!index < apiKeys.length) {
-            console.log('out of range')
             setError(true);
           }
         }
       })
       .finally(() => {
-        console.log('this is success' + success)
         if (success) {
           setLoading(false);
         } else {
@@ -110,6 +75,11 @@ function Recipes({ route, navigation }) {
       });
   };
 
+  const isFocused = useIsFocused()
+  useEffect(() => {
+    getRecipes(base + "?ingredients=" + foodItems.join(", ") + "&apiKey=")
+  }, [isFocused]) // TO DO: REMOVE AFTER
+  
   if (foodItems.length === 0) {
     return (
       <PaperProvider theme={global}>
@@ -134,49 +104,20 @@ function Recipes({ route, navigation }) {
         //TO DO: ADD LOADING VIEW
       );
     } else if (isError) {
-      return (
-        <PaperProvider theme={global}>
-          <View style={styles.mainContainer}>
-            <View>
-              <Text style={styles.title}>Recipes</Text>
-              <EmptyPage
-                image={
-                  <Image
-                    style={styles.emptyImage}
-                    source={require("../assets/error.png")}
-                  />
-                }
-                title="OH NO"
-                text={["Something went wrong. Please try again."]}
-              />
-            </View>
+     return (
+      <PaperProvider theme={global}>
+        <View style={styles.mainContainer}>
+          <View>
+           {/* TO DO: ERROR CARD */}
           </View>
-        </PaperProvider>
-      );
+          {/* onPress={() => navigation.navigate("Camera")} */}
+        </View>
+      </PaperProvider>
+    );
     } else {
       return (
         <PaperProvider theme={global}>
           <View style={styles.view}>
-            <Text style={styles.title}>Recipes</Text>
-
-            {/* Your Ingredients */}
-            <Text style={styles.subtitle}>Your Ingredients</Text>
-            <FlatList
-              contentContainerStyle={{ flexWrap: "wrap", flex: 0 }}
-              style={styles.row}
-              horizontal={true}
-              scrollEnabled={false}
-              data={foodItems}
-              keyExtractor={(item, index) => index.toString()}
-              renderItem={({ item, index }) => (
-                <View style={styles.chipContainer}>
-                  <Text style={styles.chip}>{item}</Text>
-                </View>
-              )}
-            />
-
-            {/* Recipes */}
-            <Text style={styles.subtitle}>Recipes</Text>
             <View style={styles.flexView}>
               <FlatList
                 contentContainerStyle={styles.recipesContainer}
@@ -196,23 +137,18 @@ function Recipes({ route, navigation }) {
       );
     }
   }
+
   function _renderItem({ item }, navigation) {
     return (
-      <TouchableWithoutFeedback
-        onPress={() => navigation.navigate("oneRecipe", { item: item })}
-      >
+      <TouchableWithoutFeedback onPress={() => navigation.navigate("oneRecipe", {item: item})}>
         <View style={styles.recipesItem}>
-          <ImageBackground
-            style={styles.imageBackground}
-            source={{ uri: item.image }}
-            resizeMode="cover"
-          >
-            <View style={styles.overlay} />
-            <Text style={styles.name}>{item.title}</Text>
-            <Text style={[styles.name, styles.ingredientCount]}>
-              Your Ingredients: {item.usedIngredientCount}
-            </Text>
-          </ImageBackground>
+          <CardTextComponent
+            imageUri={item.image}
+            title={item.title}
+            subtitle={`Your Ingredients: ${item.usedIngredientCount}`}
+            showFavs={true}
+            recipe={item}
+          />
         </View>
       </TouchableWithoutFeedback>
     );
@@ -273,31 +209,12 @@ const styles = StyleSheet.create({
   },
   recipesContainer: {
     overflow: "scroll",
-    paddingHorizontal: 16,
+    backgroundColor: lightGrey
   },
   recipesItem: {
-    paddingRight: 18,
+    marginLeft: 18,
     marginBottom: 20,
-  },
-  imageBackground: {
-    ...flexView,
-    width: Dimensions.get("window").width - 52,
-    borderRadius: 10,
-    overflow: "hidden",
-    shadowColor: "black",
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-    elevation: 6,
-    justifyContent: "space-between",
-    paddingBottom: 10,
-  },
-  overlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: overlay,
+    width: Dimensions.get("window").width - 52
   },
   ingredientCount: {
     fontSize: 18,

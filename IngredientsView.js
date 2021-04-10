@@ -38,7 +38,7 @@ export default class IngredientsView extends React.Component {
   }
 
   toggleShowAddIngredientUI = () => {
-    this.setState({...this.state, showAddIngredient: !this.state.showAddIngredient});
+    this.setState({...this.state, showAddIngredient: true});
   }
 
 
@@ -137,15 +137,21 @@ export default class IngredientsView extends React.Component {
                 color={green}
                  style={{ width: "100%" }}
                  onPress={() => {
+                  // this.props.navigation.navigate('Home', {
+                  //   screen: 'Home',
+                  //   params: {
+                  //     screen: 'Ingredients',
+                  //     params: {
+                  //       foodItems: this.props.store.getIngredients()
+                  //     },
+                  //   },
+                  // });
                    this.props.navigation.navigate('Home', {
                     screen: 'Home',
                     params: {
                       screen: 'Recipes',
                       params: {
-                        screen: 'Recipes',
-                        params: {
-                          foodItems: this.props.store.getIngredients(),
-                        },
+                        foodItems: this.props.store.getIngredients()
                       },
                     },
                   });

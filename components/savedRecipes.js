@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import {StyleSheet, View, FlatList, AsyncStorage, BackHandler } from "react-native";
+import {StyleSheet, View, FlatList, BackHandler } from "react-native";
 import { Provider as PaperProvider, Text, ActivityIndicator} from "react-native-paper";
+import AsyncStorage from '@react-native-community/async-storage';
 import { useIsFocused } from "@react-navigation/native";
 import { createStackNavigator, TransitionPresets } from "@react-navigation/stack";
 
@@ -44,73 +45,39 @@ export default function SavedTab() {
 function savedRecipes({ navigation }) {
   const [empty, setEmpty] = useState(true);
   const [isLoading, setLoading] = useState(true);
-  const [isSet, set] = useState(false);
-  const [favs, setFavs] = useState([]);
+  // const [isSet, set] = useState(false);
+  const [saved, setSaved] = useState([]);
   const isFocused = useIsFocused();
 
   useEffect(() => {
-    getFavs();
+    getSaved();
     BackHandler.addEventListener("hardwareBackPress", () => {
       navigation.goBack();
       return true;
     });
   }, [isFocused]);
 
-  async function getFavs() {
+  async function getSaved() {
+    const allSavedRecipes = [];
+
     try {
-      const value = await AsyncStorage.getItem("favRecipes");
-      const parsedValue = JSON.parse(value);
-      if (parsedValue && parsedValue !== null && parsedValue.length > 0) {
-        await setFavs(parsedValue);
-        setEmpty(false);
-      } else {
+      const recipeTitles = await AsyncStorage.getAllKeys();
+      if (recipeTitles.length == 0) {
         setEmpty(true);
+      } else {
+        setEmpty(false);
+        for (const title of recipeTitles) {
+          if (title !== "Ingredients") {
+            const recipe = JSON.parse(await AsyncStorage.getItem(title));
+            allSavedRecipes.push(recipe);
+          }
+        }
+        setSaved(allSavedRecipes);
       }
-      set(true);
     } catch (e) {
-      setError(true);
+      console.log(e) // TO DO: Error handling
     }
     setLoading(false);
-  }
-
-  function _renderItem({ item }, navigation) {
-    return (
-      <View>
-        <CardComponent 
-          imageUri={item.image}
-          height={200}
-          title={item.title}
-          subtitle={`${item.extendedIngredients.length} ingredients · ${item.readyInMinutes ? item.readyInMinutes : 30} mins`}
-          onPress={() =>
-            navigation.navigate("oneRecipe", {
-              item: item,
-              fromSavedPage: true,
-            })
-          }
-        />
-      
-            {/* <Button
-              mode="text"
-              color="white"
-              onPress={() => removeItem(item.title)}
-            >
-              Remove
-            </Button> */}
-      </View>
-    );
-  }
-
-  async function removeItem(title) {
-    setLoading(true);
-    let updatedFavs = [];
-    favs.forEach((recipe) => {
-      if (recipe.title !== title) {
-        updatedFavs.push(recipe);
-      }
-    });
-
-    await AsyncStorage.setItem("favRecipes", JSON.stringify(updatedFavs));
-    await getFavs();
   }
 
   if (isLoading) {
@@ -120,7 +87,7 @@ function savedRecipes({ navigation }) {
       </View>
     );
   } else {
-    if (empty && isSet) {
+    if (empty) {
       return (
         <PaperProvider theme={global}>
           <View style={styles.mainContainer}>
@@ -142,15 +109,33 @@ function savedRecipes({ navigation }) {
             <FlatList
               contentContainerStyle={styles.recipesContainer}
               showsHorizontalScrollIndicator={false}
+              showsVerticalScrollIndicator={false}
               snapToAlignment={"center"}
               scrollEnabled={true}
-              data={favs}
+              data={saved}
               renderItem={(item) => _renderItem(item, navigation)}
             />
           </View>
         </PaperProvider>
       );
     }
+  }
+
+  function _renderItem({ item }, navigation) {
+    return (
+      <View>
+        <CardComponent 
+          imageUri={item.image}
+          height={180}
+          title={item.title}
+          titleSize={25}
+          subtitle={`${item.missedIngredientCount + item.usedIngredientCount} ingredients · ${item.readyInMinutes ? item.readyInMinutes : 30} mins`}
+          onPress={() =>
+            navigation.navigate("oneRecipe", {item: item})
+          }
+        />
+      </View>
+    );
   }
 }
 

@@ -8,6 +8,7 @@ import { createMaterialBottomTabNavigator } from "@react-navigation/material-bot
 
 //Components
 import ImageClassificationCamera from "../ImageClassificationCamera";
+import OCRCamera from "./OCRCamera";
 import Home from "./home";
 import RecipesTab from "./recipes";
 import SavedTab from "./savedRecipes";
@@ -47,7 +48,8 @@ export function TabNav(props) {
         />
         <Tab.Screen
           name="Home"
-          component={Home}
+          // component={Home}
+          children={({navigation})=> <Home rootTabNavigation={navigation}/> }
           options={{
             tabBarLabel: "Recipes",
             tabBarIcon: ({ color }) => (
