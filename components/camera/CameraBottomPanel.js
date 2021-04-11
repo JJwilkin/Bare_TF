@@ -146,17 +146,21 @@ export default class cameraBottomPanel extends React.Component {
                   //     },
                   //   },
                   // });
-
-                  await this.storeData("foodItems",this.props.store.getIngredients());
+                  const currentFoodItems = await this.getData("foodItems");
+                  let newList = this.props.store.getIngredients();
+                  newList = newList.filter(val => !currentFoodItems.includes(val));
+                  const combinedFoodItems = currentFoodItems.concat(newList);
+                  await this.storeData("foodItems",combinedFoodItems);
                    this.props.navigation.navigate('Home', {
                     screen: 'Home',
                     params: {
                       screen: 'Recipes',
                       params: {
-                        foodItems: this.props.store.getIngredients()
+                        foodItems: combinedFoodItems
                       },
                     },
                   });
+                  this.props.store.resetStore();
                  }}
                  labelStyle={{ color: "white", fontSize: 18 }}
                  text={`Find Recipes`}
