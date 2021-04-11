@@ -112,9 +112,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginBottom:padding,
     shadowColor:darkGrey,
-    shadowRadius:4,
+    shadowRadius:7,
     shadowOffset:{height:3, width:0},
-    shadowOpacity:0.2
+    shadowOpacity:0.3
   },
   viewCenter: {
     ...view,

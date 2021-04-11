@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     card: {
         width: (windowWidth - (padding*3))*0.5,
         height: (windowWidth - (padding*3))*0.5,
-        backgroundColor:lightGrey,
+        backgroundColor:'white',
         borderRadius: 23,
         padding: 23,
         marginTop: padding,
