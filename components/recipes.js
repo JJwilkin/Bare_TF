@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, FlatList, Dimensions, TouchableWithoutFeedback } from "react-native";
+import { StyleSheet, View, FlatList, Dimensions, Text, TouchableWithoutFeedback } from "react-native";
 import { Provider as PaperProvider } from "react-native-paper";
 import { useIsFocused } from "@react-navigation/native"; // TEMP
 import AsyncStorage from '@react-native-community/async-storage';
-
+import LottieView from "lottie-react-native";
 import EmptyPage from "./empty.js";
 import CardTextComponent from "./cardTextComponent.js";
 
@@ -11,16 +11,28 @@ import { apiKeys } from "../config/constants";
 import { global, view, title, subtitle, overlay, flexView, grey, darkGrey, mainContainer, lightGrey, red, white } from "../styles";
 
 
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
+
 export default function RecipesTab({ route, navigation }) {
   const [isLoading, setLoading] = useState(true);
   const [recipes, setRecipes] = useState([]);
   const [isError, setError] = useState(false);
   const [foodItems, setFoodItems] = useState([]);
+  const isFocused = useIsFocused();
 
   const base = "https://api.spoonacular.com/recipes/findByIngredients";
   let index = 0;
   let success = false;
 
+  const getData = async (key) => {
+    try {
+      const jsonValue = await AsyncStorage.getItem(key)
+      return JSON.parse(jsonValue);
+    } catch(e) {
+      console.log(e)
+    }
+  }
   storeData = async (key, value) => {
     try {
       const jsonValue = JSON.stringify(value)
@@ -31,19 +43,7 @@ export default function RecipesTab({ route, navigation }) {
   };
 
   useEffect(() => {
-    
-    if (foodItems.length === 0) {
-      setLoading(true);
-    }
-    if (route.params && route.params.foodItems) {
-      storeData("foodItems", route.params.foodItems);
-      setFoodItems(route.params.foodItems);
-      let currentFoodItems = route.params.foodItems;
-
-      setLoading(true);
-      let baseUrl = base + "?ingredients=" + currentFoodItems.join(", ") + "&apiKey=";
-      getRecipes(baseUrl);
-    }
+    setLoading(true);
   }, [route.params]);
 
   const getRecipes = (url) => {
@@ -75,12 +75,17 @@ export default function RecipesTab({ route, navigation }) {
       });
   };
 
-  const isFocused = useIsFocused()
+
   useEffect(() => {
-    getRecipes(base + "?ingredients=" + foodItems.join(", ") + "&apiKey=")
+    async function getIngredients () {
+      const ingredientList = await getData("foodItems");
+      console.log(ingredientList)
+      getRecipes(base + "?ingredients=" + ingredientList.join(", ") + "&apiKey=")
+    }
+    getIngredients();
   }, [isFocused]) // TO DO: REMOVE AFTER
   
-  if (foodItems.length === 0) {
+  if (recipes.length === 0 && !isLoading) {
     return (
       <PaperProvider theme={global}>
         <View style={styles.mainContainer}>
@@ -98,21 +103,37 @@ export default function RecipesTab({ route, navigation }) {
   } else {
     if (isLoading) {
       return (
-        <View>
-        
+        <View style={styles.lottieContainer}>
+           <LottieView
+              style={{ width: windowWidth * 0.65, height: windowWidth * 0.65 }}
+              resizeMode="cover"
+              source={require("./food_loading.json")}
+              autoPlay
+              loop
+            />
         </View>
+        
         //TO DO: ADD LOADING VIEW
       );
     } else if (isError) {
      return (
-      <PaperProvider theme={global}>
-        <View style={styles.mainContainer}>
-          <View>
-           {/* TO DO: ERROR CARD */}
-          </View>
-          {/* onPress={() => navigation.navigate("Camera")} */}
+      // <PaperProvider theme={global}>
+      //   <View style={styles.mainContainer}>
+      //     <View>
+      //      {/* TO DO: ERROR CARD */}
+      //     </View>
+      //     {/* onPress={() => navigation.navigate("Camera")} */}
+      //   </View>
+      // </PaperProvider>
+      <View style={styles.lottieContainer}>
+           <LottieView
+              style={{ width: windowWidth * 0.65, height: windowWidth * 0.65 }}
+              resizeMode="cover"
+              source={require("./food_loading.json")}
+              autoPlay
+              loop
+            />
         </View>
-      </PaperProvider>
     );
     } else {
       return (
@@ -163,11 +184,18 @@ const styles = StyleSheet.create({
     width: "80%",
     height: "70%",
   },
+  lottieContainer: {
+    backgroundColor: "white",
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   view: {
     ...view,
   },
   viewCenter: {
     ...view,
+    backgroundColor: lightGrey,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -176,7 +204,7 @@ const styles = StyleSheet.create({
   },
   mainContainer: {
     ...mainContainer,
-    paddingHorizontal: 0
+    paddingHorizontal: 0,
   },
   title: {
     ...title,
@@ -209,12 +237,12 @@ const styles = StyleSheet.create({
   },
   recipesContainer: {
     overflow: "scroll",
-    backgroundColor: lightGrey
+    backgroundColor: lightGrey,
   },
   recipesItem: {
     marginLeft: 18,
     marginBottom: 20,
-    width: Dimensions.get("window").width - 52
+    width: Dimensions.get("window").width - 52,
   },
   ingredientCount: {
     fontSize: 18,

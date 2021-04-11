@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     ...mainContainer,
     paddingHorizontal: 0,
     flex: 1,
-    backgroundColor: lightGrey,
+    backgroundColor: 'white',
   },
   title: {
     ...title,

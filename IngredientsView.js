@@ -136,7 +136,7 @@ export default class IngredientsView extends React.Component {
                <SolidButton
                 color={green}
                  style={{ width: "100%" }}
-                 onPress={() => {
+                 onPress={async () => {
                   // this.props.navigation.navigate('Home', {
                   //   screen: 'Home',
                   //   params: {
@@ -146,6 +146,8 @@ export default class IngredientsView extends React.Component {
                   //     },
                   //   },
                   // });
+
+                  await this.storeData("foodItems",this.props.store.getIngredients());
                    this.props.navigation.navigate('Home', {
                     screen: 'Home',
                     params: {

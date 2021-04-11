@@ -2,18 +2,30 @@ import React, { useState, useEffect } from "react";
 import { StyleSheet, View, Image, Dimensions, Text, TouchableOpacity } from "react-native";
 import { medGrey, view, title, subtitle, padding, flexView, grey, darkGrey, mainContainer, lightGrey, text, white } from "../styles";
 import { Ionicons } from '@expo/vector-icons';
+import getImage from "../helpers/getImageHelper";
+
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-export default function IngredientsCard ({children, onPress}) {
+const ingredientTextSize = windowWidth < 410 ? 17 : 20;
+
+export default function IngredientsCard ({ingredientName="", imageName="", customText=null,  onPress}) {
+  const [imageSource, setImageSource] = useState();
+  useEffect(()=> {
+    
+    setImageSource(getImage(imageName));
+  }, [ingredientName])
+
     return (
       <View style={styles.card}>
         <View style={styles.viewCenter}>
-          <Image
-            style={styles.image}
-            source={require("../assets/foodPictures/lemon.png")}
-          />
-          <Text style={styles.text}>{children}</Text>
+          {/* <View style={{width:'100%', justifyContent:'center', alignItems:'center'}}> */}
+            <Image
+              style={styles.image}
+              source={imageSource}
+            />
+          {/* </View> */}
+          <Text style={styles.text}>{customText ? customText : ingredientName}</Text>
         </View>
         {onPress && (
           <TouchableOpacity onPress={onPress} style={styles.topRight}>
@@ -48,7 +60,8 @@ const styles = StyleSheet.create({
     },
     text:{
       ...text,
-      fontSize:22,
+      textAlign:'center',
+      fontSize: ingredientTextSize,
       fontWeight:'600'
     },
     view: {
@@ -58,6 +71,7 @@ const styles = StyleSheet.create({
     viewCenter: {
       justifyContent: "center",
       alignItems: "center",
+      width:'100%',
     },
     flexView: {
       ...flexView,
@@ -73,12 +87,14 @@ const styles = StyleSheet.create({
       ...subtitle,
     },
     image: {
-      width:'75%',
+      width:'80%',
+      height:'75%',
       resizeMode:'contain',
       shadowColor:darkGrey,
-      shadowRadius:5,
+      padding:5,
+      shadowRadius:2,
       shadowOffset:{height:3, width:0},
-      shadowOpacity:0.2,
+      shadowOpacity:0.25,
     },
     chipContainer: {
       backgroundColor: grey,

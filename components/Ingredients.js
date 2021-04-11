@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { StyleSheet, View, Platform, Dimensions, Text, TouchableOpacity, LayoutAnimation, UIManager } from "react-native";
 import { Provider as PaperProvider } from "react-native-paper";
 import { useIsFocused } from "@react-navigation/native"; 
-
 import EmptyPage from "./empty.js";
 import CardTextComponent from "./cardTextComponent.js";
 import IngredientsCard from './ingredientCard';
@@ -78,10 +77,10 @@ export default function IngredientsTab({ route, rootTabNavigation }) {
             <ScrollView style={{flex:1}} showsVerticalScrollIndicator={false}>
                 <View style={styles.cardContainer}>
                     <TouchableOpacity onPress={() => rootTabNavigation.navigate('Camera')}>
-                        <IngredientsCard key={"Add"} >Add</IngredientsCard>
+                        <IngredientsCard key={"Add"} ingredientName="Add" customText={"Add Ingredient"} imageName={"Add"}/>
                     </TouchableOpacity>
                     {ingredients.map((foodItem) => (
-                        <IngredientsCard key={foodItem} onPress={() => removeFoodItem(foodItem)}>{foodItem}</IngredientsCard>
+                        <IngredientsCard key={foodItem} onPress={() => removeFoodItem(foodItem)} imageName={foodItem} ingredientName={foodItem}/>
                     )) 
                     }
                 </View>    
@@ -101,7 +100,7 @@ const styles = StyleSheet.create({
   },
   view: {
     ...view,
-    backgroundColor: lightGrey,
+    // backgroundColor: lightGrey,
     
   },
   cardContainer: {
