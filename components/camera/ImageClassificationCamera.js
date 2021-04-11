@@ -5,10 +5,9 @@ import * as tf from '@tensorflow/tfjs';
 import {cameraWithTensors} from '@tensorflow/tfjs-react-native';
 import * as mobilenet from '@tensorflow-models/mobilenet';
 import * as knnClassifier from '@tensorflow-models/knn-classifier';
-import LottieView from "lottie-react-native";
 
 import CameraOverlay from './CameraOverlay';
-import { global, view, title, subtitle, chip, padding, grey, darkGrey, green, spaceBetweenView } from "./styles";
+import { global, view, title, subtitle, chip, padding, grey, darkGrey, green, spaceBetweenView } from "../../styles";
 import * as Font from 'expo-font';
 import { Audio } from 'expo-av';
 import { useIsFocused } from '@react-navigation/native';
@@ -16,15 +15,15 @@ import { useIsFocused } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
 
 const loadFonts = () => Font.loadAsync({
-  'SF-Heavy': require('./assets/fonts/SF-Heavy.otf'),
-  'SF-Bold': require('./assets/fonts/SF-Bold.otf'),
-  'SF-Semibold': require('./assets/fonts/SF-Semibold.otf'),
-  'SF-Regular': require('./assets/fonts/SF-Regular.otf'),
-  'SF-Medium': require('./assets/fonts/SF-Medium.otf'),
-  'SF-Light': require('./assets/fonts/SF-Light.otf'),
-  'SF-Thin': require('./assets/fonts/SF-Thin.otf')
+  'SF-Heavy': require('../../assets/fonts/SF-Heavy.otf'),
+  'SF-Bold': require('../../assets/fonts/SF-Bold.otf'),
+  'SF-Semibold': require('../../assets/fonts/SF-Semibold.otf'),
+  'SF-Regular': require('../../assets/fonts/SF-Regular.otf'),
+  'SF-Medium': require('../../assets/fonts/SF-Medium.otf'),
+  'SF-Light': require('../../assets/fonts/SF-Light.otf'),
+  'SF-Thin': require('../../assets/fonts/SF-Thin.otf')
 })
-const customModel = require('./model_3.json');
+const customModel = require('../../model_3.json');
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
@@ -127,7 +126,7 @@ export default function ImageClassificationCamera(props) {
   useEffect(()=> {
     (async () => {
       const {sound} = await Audio.Sound.createAsync(
-        require('./assets/chime.mp3')
+        require('../../assets/chime.mp3')
       )
       setSound(sound);
     })();
@@ -227,18 +226,7 @@ const handleCameraStream = (imageAsTensors) => {
       <CameraOverlay store={store} navigation={navigation} styleSheet={styles} handleViewRef={handleViewRef} isFocused={isFocused} takePicture={takePicture} frameworkReady={frameworkReady}/>
       </>
       :
-      <View style={styles.viewCenter}>
-        <LottieView
-          style={{ width: windowWidth * 0.75, height: windowWidth * 0.75 }}
-          resizeMode="cover"
-          source={require("./components/loading2.json")}
-          autoPlay
-          loop
-        />
-        <Text style={[subtitle, { marginVertical: 40 }]}>
-          {loadingText}
-        </Text>
-      </View>}
+      null}
     </View>
   );
 }

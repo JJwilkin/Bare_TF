@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {View, TouchableOpacity, Text, Dimensions, StyleSheet, TextInput, ImageBackground, ScrollView, Keyboard} from 'react-native';
-import SolidButton from './components/buttons/solidButton';
-import {title, darkGrey, text, white, lightOverlay, green, lightGrey, subtitle } from "./styles";
+import SolidButton from '../buttons/solidButton';
+import {title, darkGrey, text, white, lightOverlay, green, lightGrey, subtitle } from "../../styles";
 import { AntDesign, Entypo, Ionicons } from '@expo/vector-icons';
 import Animated from 'react-native-reanimated';
 import BottomSheet from 'reanimated-bottom-sheet';
@@ -11,9 +11,9 @@ const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 const modalHeight = Math.floor(windowHeight * 0.65);
 const modalHalfHeight = Math.floor(windowHeight * 0.25);
-const targetAreaPng = require("./assets/targetArea.png");
+const targetAreaPng = require("../../assets/targetArea.png");
 
-export default class IngredientsView extends React.Component {
+export default class cameraBottomPanel extends React.Component {
   constructor(props) {
     super(props);
     this.state = {ingredientList: [], word: "", lastWord: "", showAddIngredient: false, manualIngredient: ""}

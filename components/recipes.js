@@ -25,6 +25,20 @@ export default function RecipesTab({ route, navigation }) {
   let index = 0;
   let success = false;
 
+  const lottieAnimation = () => {
+    return (
+      <View style={styles.lottieContainer}>
+           <LottieView
+              style={{ width: windowWidth * 0.65, height: windowWidth * 0.65 }}
+              resizeMode="cover"
+              source={require("../assets/lottieJson/food_loading.json")}
+              autoPlay
+              loop
+            />
+        </View>
+    )
+  }
+
   const getData = async (key) => {
     try {
       const jsonValue = await AsyncStorage.getItem(key)
@@ -103,39 +117,11 @@ export default function RecipesTab({ route, navigation }) {
   } else {
     if (isLoading) {
       return (
-        <View style={styles.lottieContainer}>
-           <LottieView
-              style={{ width: windowWidth * 0.65, height: windowWidth * 0.65 }}
-              resizeMode="cover"
-              source={require("./food_loading.json")}
-              autoPlay
-              loop
-            />
-        </View>
-        
-        //TO DO: ADD LOADING VIEW
-      );
-    } else if (isError) {
+        lottieAnimation()
+    )} else if (isError) {
      return (
-      // <PaperProvider theme={global}>
-      //   <View style={styles.mainContainer}>
-      //     <View>
-      //      {/* TO DO: ERROR CARD */}
-      //     </View>
-      //     {/* onPress={() => navigation.navigate("Camera")} */}
-      //   </View>
-      // </PaperProvider>
-      <View style={styles.lottieContainer}>
-           <LottieView
-              style={{ width: windowWidth * 0.65, height: windowWidth * 0.65 }}
-              resizeMode="cover"
-              source={require("./food_loading.json")}
-              autoPlay
-              loop
-            />
-        </View>
-    );
-    } else {
+      lottieAnimation()
+    )} else {
       return (
         <PaperProvider theme={global}>
           <View style={styles.view}>

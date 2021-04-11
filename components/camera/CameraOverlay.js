@@ -8,10 +8,10 @@ import {
   Dimensions
 } from "react-native";
 import { DeviceMotion } from 'expo-sensors';
-import {title, darkGrey, white, lightOverlay, green, lightGrey } from "./styles";
+import {title, darkGrey, white, lightOverlay, green, lightGrey } from "../../styles";
 import AsyncStorage from '@react-native-community/async-storage';
-const targetAreaPng = require("./assets/targetArea.png");
-import IngredientsView from './IngredientsView';
+const targetAreaPng = require("../../assets/targetArea.png");
+import CameraBottomPanel from './CameraBottomPanel';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
@@ -50,7 +50,7 @@ export default function CameraOverlay(props) {
 
   return (
     <View style={styles.container}>
-      <IngredientsView store={store} navigation={navigation} handleViewRef={handleViewRef} styles={styles}  />
+      <CameraBottomPanel store={store} navigation={navigation} handleViewRef={handleViewRef} styles={styles}  />
     </View>
   );
 }

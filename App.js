@@ -79,7 +79,7 @@ export default function App() {
         <LottieView
           style={{ width: windowWidth * 0.75, height: windowWidth * 0.75 }}
           resizeMode="cover"
-          source={require("./components/loading2.json")}
+          source={require("./assets/lottieJson/loading2.json")}
           autoPlay
           loop
         />
